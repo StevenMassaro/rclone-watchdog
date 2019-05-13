@@ -7,9 +7,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 public class RCloneWatchDog {
 
@@ -17,6 +18,7 @@ public class RCloneWatchDog {
     private static final long CHAT_ID = 0L;
     private static final String TELEGRAM_API_BASE = "https://api.telegram.org/bot";
     private static final String TELEGRAM_SEND_MESSAGE = "/sendMessage";
+    private static final String LINE_SEPARATOR = "\n"; // System.lineSeparator() doesn't work
 
     public static void main(String[] args) throws IOException, URISyntaxException {
         String line = "rclone.exe sync \"C:\\test\" google:test -v";
@@ -26,14 +28,35 @@ public class RCloneWatchDog {
         PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
         executor.setStreamHandler(streamHandler);
         executor.execute(cmdLine);
-        System.out.println(outputStream.toString());
 
+        sendTelegramMessage(buildTelegramExecutionText(outputStream));
+    }
+
+    /**
+     * Send a message to the telegram bot.
+     * @param text message to be sent
+     * @return telegram API response
+     */
+    private static String sendTelegramMessage(String text) throws URISyntaxException, IOException {
         URIBuilder b = new URIBuilder(TELEGRAM_API_BASE + BOT_TOKEN + TELEGRAM_SEND_MESSAGE);
         b.addParameter("chat_id", Long.toString(CHAT_ID));
-        b.addParameter("text", outputStream.toString());
-        b.addParameter("parse_mode", "Markdown");
+        b.addParameter("text", text);
+//        b.addParameter("parse_mode", "Markdown");
+        return IOUtils.toString(b.build(), StandardCharsets.UTF_8);
+    }
 
-        String telegramResponse = IOUtils.toString(b.build(), StandardCharsets.UTF_8);
-        System.out.println(telegramResponse);
+    /**
+     * Build the message indicating the result of execution.
+     */
+    static String buildTelegramExecutionText(OutputStream outputStream){
+        String executionResult = outputStream.toString();
+        List<String> executionResultLines = Arrays.asList(executionResult.split(LINE_SEPARATOR));
+        StringBuilder response = new StringBuilder();
+        for(String line : executionResultLines.subList(executionResultLines.size() - 5, executionResultLines.size())){
+            line = line.replaceAll("\t","");
+            line = line.trim().replaceAll(" +", " ");
+            response.append(line).append(LINE_SEPARATOR);
+        }
+        return response.toString().trim();
     }
 }
