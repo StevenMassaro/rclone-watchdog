@@ -9,6 +9,7 @@ import org.apache.http.client.utils.URIBuilder;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,10 +23,16 @@ public class RCloneWatchDog {
     private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
     private static final String RCLONE_COMMANDS_FILENAME = "rclone_commands.cmd";
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) {
         System.out.println("Executing in " + CURRENT_DIRECTORY);
 
-        List<String> rcloneCommands = readRcloneCommands();
+        List<String> rcloneCommands = new ArrayList<>();
+        try {
+            rcloneCommands = readRcloneCommands();
+        } catch (IOException e) {
+            System.out.println("Failed to read " + RCLONE_COMMANDS_FILENAME);
+            e.printStackTrace();
+        }
         for (String rcloneCommand : rcloneCommands) {
             String taskName = rcloneCommand.split("\\|")[0].trim();
             String command = rcloneCommand.split("\\|")[1].trim();
@@ -37,7 +44,12 @@ public class RCloneWatchDog {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
             executor.setStreamHandler(streamHandler);
-            executor.execute(cmdLine);
+            try {
+                executor.execute(cmdLine);
+            } catch (IOException e) {
+                System.out.println("Failed to execute " + taskName);
+                e.printStackTrace();
+            }
 
             sendTelegramMessage(buildTelegramExecutionEndText(taskName, outputStream));
         }
@@ -52,12 +64,22 @@ public class RCloneWatchDog {
      * @param text message to be sent
      * @return telegram API response
      */
-    private static String sendTelegramMessage(String text) throws URISyntaxException, IOException {
-        URIBuilder b = new URIBuilder(TELEGRAM_API_BASE + BOT_TOKEN + TELEGRAM_SEND_MESSAGE);
-        b.addParameter("chat_id", Long.toString(CHAT_ID));
-        b.addParameter("text", text);
-        b.addParameter("parse_mode", "Markdown");
-        return IOUtils.toString(b.build(), StandardCharsets.UTF_8);
+    private static String sendTelegramMessage(String text) {
+        try {
+            URIBuilder b = null;
+            b = new URIBuilder(TELEGRAM_API_BASE + BOT_TOKEN + TELEGRAM_SEND_MESSAGE);
+            b.addParameter("chat_id", Long.toString(CHAT_ID));
+            b.addParameter("text", text);
+            b.addParameter("parse_mode", "Markdown");
+            return IOUtils.toString(b.build(), StandardCharsets.UTF_8);
+        } catch (URISyntaxException e) {
+            System.out.println("Failed to build Telegram URI");;
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Failed to call Telegram API");
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static String buildTelegramExecutionStartText(String task) {
