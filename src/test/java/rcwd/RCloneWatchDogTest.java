@@ -32,6 +32,6 @@ public class RCloneWatchDogTest {
 
         OutputStream sampleOutputStream = new ByteArrayOutputStream();
         IOUtils.copy(IOUtils.toInputStream(sample, StandardCharsets.UTF_8), sampleOutputStream);
-        assertEquals(expected, RCloneWatchDog.buildTelegramExecutionText(sampleOutputStream));
+        assertEquals(expected, RCloneWatchDog.buildTelegramExecutionEndText("sample", sampleOutputStream));
     }
 }

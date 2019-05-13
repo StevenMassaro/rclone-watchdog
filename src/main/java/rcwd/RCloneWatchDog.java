@@ -19,17 +19,32 @@ public class RCloneWatchDog {
     private static final String TELEGRAM_API_BASE = "https://api.telegram.org/bot";
     private static final String TELEGRAM_SEND_MESSAGE = "/sendMessage";
     private static final String LINE_SEPARATOR = "\n"; // System.lineSeparator() doesn't work
+    private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
+    private static final String RCLONE_COMMANDS_FILENAME = "rclone_commands.cmd";
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        String line = "rclone.exe sync \"C:\\test\" google:test -v";
-        CommandLine cmdLine = CommandLine.parse(line);
-        DefaultExecutor executor = new DefaultExecutor();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
-        executor.setStreamHandler(streamHandler);
-        executor.execute(cmdLine);
+        System.out.println("Executing in " + CURRENT_DIRECTORY);
 
-        sendTelegramMessage(buildTelegramExecutionText(outputStream));
+        List<String> rcloneCommands = readRcloneCommands();
+        for (String rcloneCommand : rcloneCommands) {
+            String taskName = rcloneCommand.split("\\|")[0].trim();
+            String command = rcloneCommand.split("\\|")[1].trim();
+
+            sendTelegramMessage(buildTelegramExecutionStartText(taskName));
+
+            CommandLine cmdLine = CommandLine.parse(command);
+            DefaultExecutor executor = new DefaultExecutor();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+            executor.setStreamHandler(streamHandler);
+            executor.execute(cmdLine);
+
+            sendTelegramMessage(buildTelegramExecutionEndText(taskName, outputStream));
+        }
+    }
+
+    private static List<String> readRcloneCommands() throws IOException {
+        return IOUtils.readLines(new FileInputStream(CURRENT_DIRECTORY + File.separator + RCLONE_COMMANDS_FILENAME), StandardCharsets.UTF_8);
     }
 
     /**
@@ -41,17 +56,25 @@ public class RCloneWatchDog {
         URIBuilder b = new URIBuilder(TELEGRAM_API_BASE + BOT_TOKEN + TELEGRAM_SEND_MESSAGE);
         b.addParameter("chat_id", Long.toString(CHAT_ID));
         b.addParameter("text", text);
-//        b.addParameter("parse_mode", "Markdown");
+        b.addParameter("parse_mode", "Markdown");
         return IOUtils.toString(b.build(), StandardCharsets.UTF_8);
+    }
+
+    private static String buildTelegramExecutionStartText(String task) {
+        return "*Starting " + task + "*";
     }
 
     /**
      * Build the message indicating the result of execution.
      */
-    static String buildTelegramExecutionText(OutputStream outputStream){
+    static String buildTelegramExecutionEndText(String task, OutputStream outputStream) {
         String executionResult = outputStream.toString();
         List<String> executionResultLines = Arrays.asList(executionResult.split(LINE_SEPARATOR));
         StringBuilder response = new StringBuilder();
+        response.append("*");
+        response.append(task);
+        response.append(" execution finished.*");
+        response.append(LINE_SEPARATOR);
         for(String line : executionResultLines.subList(executionResultLines.size() - 5, executionResultLines.size())){
             line = line.replaceAll("\t","");
             line = line.trim().replaceAll(" +", " ");
