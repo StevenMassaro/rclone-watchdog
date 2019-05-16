@@ -12,6 +12,8 @@ import static org.junit.Assert.assertEquals;
 
 public class RCloneWatchDogTest {
 
+    private TelegramHelper telegramHelper = new TelegramHelper(null,null,null);
+
     @Test
     public void testTelegramString() throws IOException {
         String sample = "2019/05/13 09:29:58 INFO  : Encrypted drive 'google:test': Waiting for checks to finish\n" +
@@ -32,6 +34,6 @@ public class RCloneWatchDogTest {
 
         OutputStream sampleOutputStream = new ByteArrayOutputStream();
         IOUtils.copy(IOUtils.toInputStream(sample, StandardCharsets.UTF_8), sampleOutputStream);
-        assertEquals(expected, RCloneWatchDog.buildTelegramExecutionEndText("sample", sampleOutputStream));
+        assertEquals(expected, telegramHelper.buildTelegramExecutionEndText("sample", sampleOutputStream));
     }
 }
