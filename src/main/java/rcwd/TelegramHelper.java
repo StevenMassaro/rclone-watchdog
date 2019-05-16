@@ -34,8 +34,6 @@ public class TelegramHelper {
      * @return telegram API response
      */
     String sendTelegramMessage(String text) {
-
-
         try {
             OkHttpClient client = new OkHttpClient();
 
