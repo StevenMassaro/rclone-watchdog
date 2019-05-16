@@ -26,7 +26,8 @@ public class RCloneWatchDogTest {
                 "Transferred:            0 / 0, -\n" +
                 "Elapsed time:        1.5s\n" +
                 "\n";
-        String expected = "Transferred: 0 / 0 Bytes, -, 0 Bytes/s, ETA -\n" +
+        String expected = "*sample execution finished.*\n"+
+                "Transferred: 0 / 0 Bytes, -, 0 Bytes/s, ETA -\n" +
                 "Errors: 0\n" +
                 "Checks: 2 / 2, 100%\n" +
                 "Transferred: 0 / 0, -\n" +
