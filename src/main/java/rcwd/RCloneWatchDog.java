@@ -3,6 +3,7 @@ package rcwd;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -41,9 +42,7 @@ public class RCloneWatchDog {
 
             CommandLine cmdLine = CommandLine.parse(command);
             DefaultExecutor executor = new DefaultExecutor();
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
-            executor.setStreamHandler(streamHandler);
+            executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
             try {
                 executor.execute(cmdLine);
             } catch (IOException e) {
