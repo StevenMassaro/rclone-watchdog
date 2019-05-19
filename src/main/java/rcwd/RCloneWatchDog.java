@@ -1,5 +1,6 @@
 package rcwd;
 
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -7,9 +8,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class RCloneWatchDog {
 
@@ -21,6 +20,7 @@ public class RCloneWatchDog {
     private static Boolean PERFORM_MULTIPLE_RCLONE_EXECUTION_CHECK;
     private static Long CONCURRENT_RCLONE_EXECUTION_LIMIT;
     private static Boolean SEND_TELEGRAM_MESSAGES;
+    private static Integer MAX_TELEGRAM_LOG_LINES;
     private static final String SETTINGS_FILENAME = "settings.properties";
     private static TelegramHelper telegramHelper;
 
@@ -45,20 +45,21 @@ public class RCloneWatchDog {
 
             telegramHelper.sendTelegramMessage(telegramHelper.buildTelegramExecutionStartText(taskName));
 
+            CircularFifoQueue<String> lastLogLines = new CircularFifoQueue<>(MAX_TELEGRAM_LOG_LINES);
             CommandLine cmdLine = CommandLine.parse(command);
             DefaultExecutor executor = new DefaultExecutor();
             executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-            ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramHelper, taskName);
+            ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramHelper, taskName, lastLogLines);
             PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
             executor.setStreamHandler(pumpStreamHandler);
             try {
                 executor.execute(cmdLine);
+                telegramHelper.sendTelegramMessage(telegramHelper.buildTelegramExecutionEndText(taskName, startTime, System.nanoTime(), lastLogLines));
             } catch (IOException e) {
-                telegramHelper.sendTelegramMessage(telegramHelper.buildFailureText(taskName, e.toString()));
+                telegramHelper.sendTelegramMessage(telegramHelper.buildFailureText(taskName, e.toString(), lastLogLines));
                 System.out.println(e.toString());
             }
 
-            telegramHelper.sendTelegramMessage(telegramHelper.buildTelegramExecutionEndText(taskName, startTime, System.nanoTime()));
             System.out.println("Finish executing " + rcloneCommand);
         }
     }
@@ -86,6 +87,7 @@ public class RCloneWatchDog {
         PERFORM_MULTIPLE_RCLONE_EXECUTION_CHECK = Boolean.valueOf(properties.getProperty("PERFORM_MULTIPLE_RCLONE_EXECUTION_CHECK"));
         CONCURRENT_RCLONE_EXECUTION_LIMIT = properties.getProperty("CONCURRENT_RCLONE_EXECUTION_LIMIT") == null ? null : Long.valueOf(properties.getProperty("CONCURRENT_RCLONE_EXECUTION_LIMIT"));
         SEND_TELEGRAM_MESSAGES = Boolean.valueOf(properties.getProperty("SEND_TELEGRAM_MESSAGES"));
+        MAX_TELEGRAM_LOG_LINES = properties.getProperty("MAX_TELEGRAM_LOG_LINES") == null ? null : Integer.valueOf(properties.getProperty("MAX_TELEGRAM_LOG_LINES"));
     }
 
     private static List<String> readRcloneCommands() throws IOException {

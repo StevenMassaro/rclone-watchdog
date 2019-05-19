@@ -1,5 +1,6 @@
 package rcwd;
 
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,6 +9,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,6 +47,6 @@ public class RCloneWatchDogTest {
     public void testExecutionTimeString() throws InterruptedException {
         long st = System.nanoTime();
         Thread.sleep(1000*62);
-        System.out.println(telegramHelper.buildTelegramExecutionEndText("tasl", st, System.nanoTime()));
+        System.out.println(telegramHelper.buildTelegramExecutionEndText("tasl", st, System.nanoTime(), new CircularFifoQueue<String>()));
     }
 }
