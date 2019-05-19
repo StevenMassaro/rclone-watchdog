@@ -1,6 +1,7 @@
 package rcwd;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -36,5 +37,13 @@ public class RCloneWatchDogTest {
         OutputStream sampleOutputStream = new ByteArrayOutputStream();
         IOUtils.copy(IOUtils.toInputStream(sample, StandardCharsets.UTF_8), sampleOutputStream);
         assertEquals(expected, telegramHelper.buildTelegramExecutionEndText("sample", sampleOutputStream));
+    }
+
+    @Test
+    @Ignore
+    public void testExecutionTimeString() throws InterruptedException {
+        long st = System.nanoTime();
+        Thread.sleep(1000*65);
+        System.out.println(telegramHelper.buildTelegramExecutionEndText("tasl", st, System.nanoTime()));
     }
 }

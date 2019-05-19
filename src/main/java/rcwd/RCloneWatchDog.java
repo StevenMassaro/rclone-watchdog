@@ -33,8 +33,11 @@ public class RCloneWatchDog {
             rcloneCommands = readRcloneCommands();
         } catch (IOException e) {
             telegramHelper.sendTelegramMessage(telegramHelper.buildErrorText("loading commands", e.toString()));
+            System.out.println(e.toString());
         }
         for (String rcloneCommand : rcloneCommands) {
+            long startTime = System.nanoTime();
+            System.out.println("Begin executing " + rcloneCommand);
             String taskName = rcloneCommand.split("\\|")[0].trim();
             String command = rcloneCommand.split("\\|")[1].trim();
 
@@ -47,9 +50,11 @@ public class RCloneWatchDog {
                 executor.execute(cmdLine);
             } catch (IOException e) {
                 telegramHelper.sendTelegramMessage(telegramHelper.buildErrorText(taskName, e.toString()));
+                System.out.println(e.toString());
             }
 
-            telegramHelper.sendTelegramMessage(telegramHelper.buildTelegramExecutionEndText(taskName, outputStream));
+            telegramHelper.sendTelegramMessage(telegramHelper.buildTelegramExecutionEndText(taskName, startTime, System.nanoTime()));
+            System.out.println("Finish executing " + rcloneCommand);
         }
     }
 

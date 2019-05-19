@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TelegramHelper {
     private String BOT_TOKEN;
@@ -89,5 +90,35 @@ public class TelegramHelper {
             response.append(line).append(LINE_SEPARATOR);
         }
         return response.toString().trim();
+    }
+
+    /**
+     * Build the message indicating the result of execution.
+     */
+    String buildTelegramExecutionEndText(String task, long startTime, long endTime) {
+        long elapsedTime = endTime-startTime;
+        String timeString = "";
+        long days = TimeUnit.DAYS.convert(elapsedTime, TimeUnit.NANOSECONDS);
+        if(days > 0){
+            timeString += days + " days";
+            elapsedTime = elapsedTime - TimeUnit.NANOSECONDS.convert(days, TimeUnit.DAYS);
+        }
+        long hours = TimeUnit.HOURS.convert(elapsedTime, TimeUnit.NANOSECONDS);
+        if(hours > 0){
+            timeString += hours + " hours";
+            elapsedTime = elapsedTime - TimeUnit.NANOSECONDS.convert(hours, TimeUnit.HOURS);
+        }
+        long minutes = TimeUnit.MINUTES.convert(elapsedTime, TimeUnit.NANOSECONDS);
+        if(minutes > 0){
+            timeString += minutes + " minutes";
+            elapsedTime = elapsedTime - TimeUnit.NANOSECONDS.convert(minutes, TimeUnit.MINUTES);
+        }
+        long seconds = TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS);
+        if(seconds>0){
+            timeString += seconds + " seconds";
+            elapsedTime = elapsedTime - TimeUnit.NANOSECONDS.convert(seconds, TimeUnit.SECONDS);
+        }
+
+        return "*Finished " + task + "*" + LINE_SEPARATOR + "Execution time: " + timeString;
     }
 }
