@@ -43,7 +43,7 @@ public class RCloneWatchDogTest {
     @Ignore
     public void testExecutionTimeString() throws InterruptedException {
         long st = System.nanoTime();
-        Thread.sleep(1000*65);
+        Thread.sleep(1000*62);
         System.out.println(telegramHelper.buildTelegramExecutionEndText("tasl", st, System.nanoTime()));
     }
 }
