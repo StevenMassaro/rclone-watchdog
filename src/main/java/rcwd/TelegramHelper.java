@@ -21,11 +21,16 @@ public class TelegramHelper {
     private String TELEGRAM_API_BASE;
     private final String LINE_SEPARATOR = "\n"; // System.lineSeparator() doesn't work
     private final String TELEGRAM_SEND_MESSAGE = "/sendMessage";
+    private Boolean SEND_TELEGRAM_MESSAGES;
 
-    public TelegramHelper(String BOT_TOKEN, String CHAT_ID, String TELEGRAM_API_BASE) {
+    public TelegramHelper(String BOT_TOKEN, String CHAT_ID, String TELEGRAM_API_BASE, Boolean SEND_TELEGRAM_MESSAGES) {
         this.BOT_TOKEN = BOT_TOKEN;
         this.CHAT_ID = CHAT_ID;
         this.TELEGRAM_API_BASE = TELEGRAM_API_BASE;
+        this.SEND_TELEGRAM_MESSAGES = SEND_TELEGRAM_MESSAGES;
+        if(Boolean.FALSE.equals(SEND_TELEGRAM_MESSAGES)){
+            System.out.println("WARNING: Not sending Telegram messages.");
+        }
     }
 
     /**
@@ -35,33 +40,37 @@ public class TelegramHelper {
      * @return telegram API response
      */
     String sendTelegramMessage(String text) {
-        try {
-            OkHttpClient client = new OkHttpClient();
+        if(Boolean.TRUE.equals(SEND_TELEGRAM_MESSAGES)){
+            try {
+                OkHttpClient client = new OkHttpClient();
 
-            MediaType mediaType = MediaType.parse("application/json");
-            RequestBody body = RequestBody.create(mediaType, "{\"text\":\""+text+"\"}");
+                MediaType mediaType = MediaType.parse("application/json");
+                RequestBody body = RequestBody.create(mediaType, "{\"text\":\""+text+"\"}");
 
-            URIBuilder b = null;
-            b = new URIBuilder(TELEGRAM_API_BASE + BOT_TOKEN + TELEGRAM_SEND_MESSAGE);
-            b.addParameter("chat_id", CHAT_ID);
+                URIBuilder b = null;
+                b = new URIBuilder(TELEGRAM_API_BASE + BOT_TOKEN + TELEGRAM_SEND_MESSAGE);
+                b.addParameter("chat_id", CHAT_ID);
 //            b.addParameter("text", text);
-            b.addParameter("parse_mode", "Markdown");
-            Request request = new Request.Builder()
-                    .url(b.build().toString())
-                    .post(body)
-                    .addHeader("Content-Type", "application/json")
-                    .build();
-            Response response = client.newCall(request).execute();
-            return response.toString();
+                b.addParameter("parse_mode", "Markdown");
+                Request request = new Request.Builder()
+                        .url(b.build().toString())
+                        .post(body)
+                        .addHeader("Content-Type", "application/json")
+                        .build();
+                Response response = client.newCall(request).execute();
+                return response.toString();
 
-        } catch (URISyntaxException e) {
-            System.out.println("Failed to build Telegram URI");
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("Failed to call Telegram API");
-            e.printStackTrace();
+            } catch (URISyntaxException e) {
+                System.out.println("Failed to build Telegram URI");
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("Failed to call Telegram API");
+                e.printStackTrace();
+            }
+            return null;
+        } else {
+            return null;
         }
-        return null;
     }
 
     String buildErrorText(String task, String exceptionText) {

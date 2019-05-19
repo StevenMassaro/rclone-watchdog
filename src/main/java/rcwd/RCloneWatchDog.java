@@ -22,6 +22,7 @@ public class RCloneWatchDog {
     private static String RCLONE_COMMANDS_FILENAME;
     private static Boolean PERFORM_MULTIPLE_RCLONE_EXECUTION_CHECK;
     private static Long CONCURRENT_RCLONE_EXECUTION_LIMIT;
+    private static Boolean SEND_TELEGRAM_MESSAGES;
     private static final String SETTINGS_FILENAME = "settings.properties";
     private static TelegramHelper telegramHelper;
 
@@ -29,7 +30,7 @@ public class RCloneWatchDog {
         System.out.println("Executing in " + CURRENT_DIRECTORY);
         loadProperties();
         verifyRcloneNotAlreadyRunning();
-        telegramHelper = new TelegramHelper(BOT_TOKEN, CHAT_ID, TELEGRAM_API_BASE);
+        telegramHelper = new TelegramHelper(BOT_TOKEN, CHAT_ID, TELEGRAM_API_BASE, SEND_TELEGRAM_MESSAGES);
 
         List<String> rcloneCommands = new ArrayList<>();
         try {
@@ -83,6 +84,7 @@ public class RCloneWatchDog {
         RCLONE_COMMANDS_FILENAME = properties.getProperty("RCLONE_COMMANDS_FILENAME");
         PERFORM_MULTIPLE_RCLONE_EXECUTION_CHECK = Boolean.valueOf(properties.getProperty("PERFORM_MULTIPLE_RCLONE_EXECUTION_CHECK"));
         CONCURRENT_RCLONE_EXECUTION_LIMIT = properties.getProperty("CONCURRENT_RCLONE_EXECUTION_LIMIT") == null ? null : Long.valueOf(properties.getProperty("CONCURRENT_RCLONE_EXECUTION_LIMIT"));
+        SEND_TELEGRAM_MESSAGES = Boolean.valueOf(properties.getProperty("SEND_TELEGRAM_MESSAGES"));
     }
 
     private static List<String> readRcloneCommands() throws IOException {

@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 public class RCloneWatchDogTest {
 
-    private TelegramHelper telegramHelper = new TelegramHelper(null,null,null);
+    private TelegramHelper telegramHelper = new TelegramHelper(null,null,null, null);
 
     @Test
     public void testTelegramString() throws IOException {
