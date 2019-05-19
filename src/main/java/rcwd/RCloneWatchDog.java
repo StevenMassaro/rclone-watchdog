@@ -1,8 +1,6 @@
 package rcwd;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ShutdownHookProcessDestroyer;
+import org.apache.commons.exec.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,7 +34,7 @@ public class RCloneWatchDog {
         try {
             rcloneCommands = readRcloneCommands();
         } catch (IOException e) {
-            telegramHelper.sendTelegramMessage(telegramHelper.buildErrorText("loading commands", e.toString()));
+            telegramHelper.sendTelegramMessage(telegramHelper.buildFailureText("loading commands", e.toString()));
             System.out.println(e.toString());
         }
         for (String rcloneCommand : rcloneCommands) {
@@ -50,10 +48,13 @@ public class RCloneWatchDog {
             CommandLine cmdLine = CommandLine.parse(command);
             DefaultExecutor executor = new DefaultExecutor();
             executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
+            ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramHelper, taskName);
+            PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
+            executor.setStreamHandler(pumpStreamHandler);
             try {
                 executor.execute(cmdLine);
             } catch (IOException e) {
-                telegramHelper.sendTelegramMessage(telegramHelper.buildErrorText(taskName, e.toString()));
+                telegramHelper.sendTelegramMessage(telegramHelper.buildFailureText(taskName, e.toString()));
                 System.out.println(e.toString());
             }
 

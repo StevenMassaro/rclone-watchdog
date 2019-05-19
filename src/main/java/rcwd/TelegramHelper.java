@@ -73,7 +73,12 @@ public class TelegramHelper {
         }
     }
 
-    String buildErrorText(String task, String exceptionText) {
+    String buildErrorText(String task, String exceptionText){
+        // replace all slashes with double slash
+        return "*Error in " + task + "*" + "```\\n" + exceptionText.replaceAll("\\\\","\\\\\\\\") + "```";
+    }
+
+    String buildFailureText(String task, String exceptionText) {
         // replace all slashes with double slash
         return "*Failed " + task + "*" + "```\\n" + exceptionText.replaceAll("\\\\","\\\\\\\\") + "```";
     }
