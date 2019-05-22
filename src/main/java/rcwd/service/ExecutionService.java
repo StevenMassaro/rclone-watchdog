@@ -44,7 +44,7 @@ public class ExecutionService {
         telegramService.sendTelegramMessage(buildTelegramExecutionStartText(command.getName()));
 
         CircularFifoQueue<String> lastLogLines = new CircularFifoQueue<>(properties.getMaxTelegramLogLines());
-        CommandLine cmdLine = CommandLine.parse(command.getCommand());
+        CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath() + " " + command.getCommand().trim());
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines);

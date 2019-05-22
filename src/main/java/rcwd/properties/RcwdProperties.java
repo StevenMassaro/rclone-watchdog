@@ -24,6 +24,9 @@ public class RcwdProperties {
     @Value("${SEND_TELEGRAM_MESSAGES}")
     private Boolean sendTelegramMessages;
 
+    @Value("${RCLONE_BASE_PATH}")
+    private String rcloneBasePath;
+
     private final String settingsFilename = "settings.properties";
 
     public String getCurrentDirectory() {
@@ -72,5 +75,13 @@ public class RcwdProperties {
 
     public String getSettingsFilename() {
         return settingsFilename;
+    }
+
+    public String getRcloneBasePath() {
+        return rcloneBasePath;
+    }
+
+    public void setRcloneBasePath(String rcloneBasePath) {
+        this.rcloneBasePath = rcloneBasePath;
     }
 }
