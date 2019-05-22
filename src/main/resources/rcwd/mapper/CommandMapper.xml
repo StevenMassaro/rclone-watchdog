@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="rcwd.mapper.CommandMapper">
+
+    <select id="get" resultMap="commandMap">
+        SELECT
+        <include refid="commandColumns"/>
+        FROM rclonewatchdog.command c
+        WHERE c.id = #{commandId}
+    </select>
+
+    <sql id="commandColumns">
+        c.id cid,
+        c.command ccommand,
+        c.name cname
+    </sql>
+
+    <resultMap id="commandMap" type="rcwd.model.Command">
+        <id property="id" column="cid" javaType="long"/>
+        <result property="name" column="cname"/>
+        <result property="command" column="ccommand"/>
+    </resultMap>
+
+</mapper>

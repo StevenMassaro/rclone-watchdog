@@ -4,6 +4,7 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
+import rcwd.service.TelegramService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,12 +14,12 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static rcwd.helper.MessageHelper.buildTelegramExecutionEndText;
 
-public class RCloneWatchDogTest {
-
-    private TelegramHelper telegramHelper = new TelegramHelper(null,null,null, null);
+public class MessageHelperTest {
 
     @Test
+    @Ignore
     public void testTelegramString() throws IOException {
         String sample = "2019/05/13 09:29:58 INFO  : Encrypted drive 'google:test': Waiting for checks to finish\n" +
                 "2019/05/13 09:29:58 INFO  : Encrypted drive 'google:test': Waiting for transfers to finish\n" +
@@ -39,7 +40,7 @@ public class RCloneWatchDogTest {
 
         OutputStream sampleOutputStream = new ByteArrayOutputStream();
         IOUtils.copy(IOUtils.toInputStream(sample, StandardCharsets.UTF_8), sampleOutputStream);
-        assertEquals(expected, telegramHelper.buildTelegramExecutionEndText("sample", sampleOutputStream));
+        assertEquals(expected, buildTelegramExecutionEndText("sample", sampleOutputStream));
     }
 
     @Test
@@ -47,6 +48,6 @@ public class RCloneWatchDogTest {
     public void testExecutionTimeString() throws InterruptedException {
         long st = System.nanoTime();
         Thread.sleep(1000*62);
-        System.out.println(telegramHelper.buildTelegramExecutionEndText("tasl", st, System.nanoTime(), new CircularFifoQueue<String>()));
+        System.out.println(buildTelegramExecutionEndText("tasl", st, System.nanoTime(), new CircularFifoQueue<String>()));
     }
 }

@@ -1,4 +1,4 @@
-package rcwd;
+package rcwd.helper;
 
 import org.apache.commons.lang.mutable.MutableLong;
 
@@ -33,7 +33,7 @@ public class TimeHelper {
                     + " "
                     + (convertedTime > 1 ? timeUnitString : timeUnitString.substring(0, timeUnit.toString().length() - 1))
                     + " ";
-            elapsedTime = new MutableLong(elapsedTime.longValue() - TimeUnit.NANOSECONDS.convert(convertedTime, timeUnit));
+            elapsedTime.setValue(elapsedTime.longValue() - TimeUnit.NANOSECONDS.convert(convertedTime, timeUnit));
         }
         return timeString;
     }

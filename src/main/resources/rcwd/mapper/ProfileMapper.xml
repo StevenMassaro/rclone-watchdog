@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="rcwd.mapper.ProfileMapper">
+
+    <select id="list" resultMap="profileMap">
+        <include refid="selectProfile"/>
+    </select>
+
+    <select id="get" resultMap="profileMap">
+        <include refid="selectProfile"/>
+        WHERE p.id = #{profileId}
+    </select>
+
+    <sql id="selectProfile">
+        SELECT
+        p.id pid,
+        p.name pname,
+        <include refid="rcwd.mapper.CommandMapper.commandColumns"/>
+        FROM rclonewatchdog.profile p
+        FULL JOIN rclonewatchdog.command c
+        ON p.commandid = c.id
+    </sql>
+
+    <resultMap id="profileMap" type="rcwd.model.Profile">
+        <id property="id" column="pid" javaType="long"/>
+        <result property="name" column="pname"/>
+        <association property="commands" resultMap="rcwd.mapper.CommandMapper.commandMap"/>
+    </resultMap>
+
+</mapper>
