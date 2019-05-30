@@ -19,7 +19,7 @@
         p.name pname,
         <include refid="rcwd.mapper.CommandMapper.commandColumns"/>
         FROM rclonewatchdog.profile p
-        FULL JOIN rclonewatchdog.command c
+        INNER JOIN rclonewatchdog.command c
         ON p.commandid = c.id
     </sql>
 
