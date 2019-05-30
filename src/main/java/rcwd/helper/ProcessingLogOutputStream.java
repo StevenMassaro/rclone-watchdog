@@ -11,11 +11,17 @@ public class ProcessingLogOutputStream extends LogOutputStream {
     private TelegramService telegramHelper;
     private String task;
     private CircularFifoQueue<String> lastLogLines;
+    private boolean printRcloneToConsole;
 
     public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> lastLogLines) {
+        this(telegramHelper, task, lastLogLines, false);
+    }
+
+    public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> lastLogLines, Boolean printRcloneToConsole) {
         this.telegramHelper = telegramHelper;
         this.task = task;
         this.lastLogLines = lastLogLines;
+        this.printRcloneToConsole = printRcloneToConsole;
     }
 
     @Override
@@ -27,6 +33,8 @@ public class ProcessingLogOutputStream extends LogOutputStream {
         }
         lastLogLines.add(line);
 
-        System.out.println(line);
+        if (printRcloneToConsole) {
+            System.out.println(line);
+        }
     }
 }

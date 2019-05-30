@@ -27,6 +27,9 @@ public class RcwdProperties {
     @Value("${RCLONE_BASE_PATH}")
     private String rcloneBasePath;
 
+    @Value("${PRINT_RCLONE_TO_CONSOLE}")
+    private Boolean printRcloneToConsole;
+
     private final String settingsFilename = "settings.properties";
 
     public String getCurrentDirectory() {
@@ -83,5 +86,13 @@ public class RcwdProperties {
 
     public void setRcloneBasePath(String rcloneBasePath) {
         this.rcloneBasePath = rcloneBasePath;
+    }
+
+    public Boolean getPrintRcloneToConsole() {
+        return printRcloneToConsole;
+    }
+
+    public void setPrintRcloneToConsole(Boolean printRcloneToConsole) {
+        this.printRcloneToConsole = printRcloneToConsole;
     }
 }

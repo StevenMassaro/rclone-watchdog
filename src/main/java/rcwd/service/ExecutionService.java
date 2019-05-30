@@ -47,7 +47,7 @@ public class ExecutionService {
         CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath() + " " + command.getCommand().trim());
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines);
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines, properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
