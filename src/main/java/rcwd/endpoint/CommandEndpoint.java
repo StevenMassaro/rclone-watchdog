@@ -6,14 +6,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import rcwd.mapper.CommandMapper;
-import rcwd.mapper.ProfileMapper;
 import rcwd.model.Command;
-import rcwd.model.Profile;
 import rcwd.service.ExecutionService;
 
-@RestController()
-@RequestMapping("/execute")
-public class ExecuteEndpoint {
+import java.util.List;
+
+@RestController
+@RequestMapping("/command")
+public class CommandEndpoint {
 
     @Autowired
     private CommandMapper commandMapper;
@@ -21,8 +21,13 @@ public class ExecuteEndpoint {
     @Autowired
     private ExecutionService executionService;
 
-    @GetMapping("/command/{commandId}")
-    public String executeByCommandId(@PathVariable long commandId){
+    @GetMapping
+    public List<Command> list(){
+        return commandMapper.list();
+    }
+
+    @GetMapping("/{commandId}/execute")
+    public String execute(@PathVariable long commandId){
         Command command = commandMapper.get(commandId);
         executionService.execute(command);
         return Long.toString(command.getId());

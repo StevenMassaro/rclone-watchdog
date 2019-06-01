@@ -17,10 +17,13 @@
         SELECT
         p.id pid,
         p.name pname,
-        <include refid="rcwd.mapper.CommandMapper.commandColumns"/>
+        <include refid="rcwd.mapper.CommandMapper.commandColumns"/>,
+        <include refid="rcwd.mapper.CommandMapper.sourceColumns"/>,
+        <include refid="rcwd.mapper.CommandMapper.destinationColumns"/>
         FROM rclonewatchdog.profile p
-        INNER JOIN rclonewatchdog.command c
-        ON p.commandid = c.id
+        INNER JOIN rclonewatchdog.command c ON p.commandid = c.id
+        INNER JOIN rclonewatchdog.source s ON c.source = s.id
+        INNER JOIN rclonewatchdog.destination d ON c.destination = d.id
     </sql>
 
     <resultMap id="profileMap" type="rcwd.model.Profile">
