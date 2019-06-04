@@ -4,6 +4,7 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
+import rcwd.helper.MessageHelper;
 import rcwd.service.TelegramService;
 
 import java.io.ByteArrayOutputStream;
@@ -12,11 +13,15 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
-import static rcwd.helper.MessageHelper.buildTelegramExecutionEndText;
+import static org.junit.Assert.assertTrue;
 
 public class MessageHelperTest {
+
+    private int logLinesToReport = 6;
+    private MessageHelper messageHelper = new MessageHelper(logLinesToReport);
 
     @Test
     @Ignore
@@ -40,7 +45,7 @@ public class MessageHelperTest {
 
         OutputStream sampleOutputStream = new ByteArrayOutputStream();
         IOUtils.copy(IOUtils.toInputStream(sample, StandardCharsets.UTF_8), sampleOutputStream);
-        assertEquals(expected, buildTelegramExecutionEndText("sample", sampleOutputStream));
+        assertEquals(expected, messageHelper.buildTelegramExecutionEndText("sample", sampleOutputStream));
     }
 
     @Test
@@ -48,6 +53,20 @@ public class MessageHelperTest {
     public void testExecutionTimeString() throws InterruptedException {
         long st = System.nanoTime();
         Thread.sleep(1000*62);
-        System.out.println(buildTelegramExecutionEndText("tasl", st, System.nanoTime(), new CircularFifoQueue<String>()));
+        System.out.println(messageHelper.buildTelegramExecutionEndText("tasl", st, System.nanoTime(), new CircularFifoQueue<String>()));
+    }
+
+    /**
+     * Tests to make sure that the last few lines from the fifo queue are being grabbed.
+     */
+    @Test
+    public void testCorrectNumberOfLines() {
+        CircularFifoQueue<String> circularFifoQueue = new CircularFifoQueue<>();
+        for (int i = 0; i < logLinesToReport + 5; i++) {
+            circularFifoQueue.add(Integer.toString(new Random().nextInt()));
+        }
+        String message = messageHelper.buildTelegramExecutionEndText("tas1", System.nanoTime(), System.nanoTime(), circularFifoQueue);
+        assertEquals(logLinesToReport + 5, message.split("\n").length);
+        assertTrue(message.contains(circularFifoQueue.get(circularFifoQueue.size()-1)));
     }
 }

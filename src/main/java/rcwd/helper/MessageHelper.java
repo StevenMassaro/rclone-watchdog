@@ -4,29 +4,35 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class MessageHelper {
 
-    private final static String LINE_SEPARATOR = "\n"; // System.lineSeparator() doesn't work
+    private final String LINE_SEPARATOR = "\n"; // System.lineSeparator() doesn't work
+    private int logLinesToReport;
 
-    public static String buildErrorText(String task, String exceptionText, CircularFifoQueue<String> lastLogLines) {
+    public MessageHelper(int logLinesToReport) {
+        this.logLinesToReport = logLinesToReport;
+    }
+
+    public String buildErrorText(String task, String exceptionText, CircularFifoQueue<String> lastLogLines) {
         return buildBadTextBase("Error in", task, exceptionText, lastLogLines);
     }
 
-    public static String buildErrorText(String task, String exceptionText) {
+    public String buildErrorText(String task, String exceptionText) {
         return buildBadTextBase("Error in", task, exceptionText);
     }
 
-    public static String buildFailureText(String task, String exceptionText, CircularFifoQueue<String> lastLogLines) {
+    public String buildFailureText(String task, String exceptionText, CircularFifoQueue<String> lastLogLines) {
         return buildBadTextBase("Failed", task, exceptionText, lastLogLines);
     }
 
-    public static String buildFailureText(String task, String exceptionText) {
+    public String buildFailureText(String task, String exceptionText) {
         return buildBadTextBase("Failed", task, exceptionText);
     }
 
-    private static String buildBadTextBase(String message, String task, String exceptionText, CircularFifoQueue<String> lastLogLines) {
+    private String buildBadTextBase(String message, String task, String exceptionText, CircularFifoQueue<String> lastLogLines) {
         String text = "*" + message + " " + task + "*" + LINE_SEPARATOR + makeTextCode(exceptionText.replaceAll("\\\\", "\\\\\\\\"));
         if (!lastLogLines.isEmpty()) {
             text += "Log: " + LINE_SEPARATOR + makeTextCode(createStringFromCircularFifoQueue(lastLogLines));
@@ -34,11 +40,11 @@ public class MessageHelper {
         return text;
     }
 
-    private static String buildBadTextBase(String message, String task, String exceptionText) {
+    private String buildBadTextBase(String message, String task, String exceptionText) {
         return buildBadTextBase(message, task, exceptionText, new CircularFifoQueue<String>());
     }
 
-    public static String buildTelegramExecutionStartText(String task) {
+    public String buildTelegramExecutionStartText(String task) {
         return "*Starting " + task + "*";
     }
 
@@ -46,7 +52,7 @@ public class MessageHelper {
      * Build the message indicating the result of execution.
      */
     @Deprecated
-    public static String buildTelegramExecutionEndText(String task, OutputStream outputStream) {
+    public String buildTelegramExecutionEndText(String task, OutputStream outputStream) {
         String executionResult = outputStream.toString();
         List<String> executionResultLines = Arrays.asList(executionResult.split(LINE_SEPARATOR));
         StringBuilder response = new StringBuilder();
@@ -65,7 +71,7 @@ public class MessageHelper {
     /**
      * Build the message indicating the result of execution.
      */
-    public static String buildTelegramExecutionEndText(String task, long startTime, long endTime, CircularFifoQueue<String> logLines) {
+    public String buildTelegramExecutionEndText(String task, long startTime, long endTime, CircularFifoQueue<String> logLines) {
         String resultText = "*Finished " + task + "*"
                 + LINE_SEPARATOR + "Execution time: " + TimeHelper.elapsedTimeToHumanString(startTime, endTime)
                 + LINE_SEPARATOR;
@@ -73,16 +79,24 @@ public class MessageHelper {
         return resultText + makeTextCode(createStringFromCircularFifoQueue(logLines));
     }
 
-    private static String createStringFromCircularFifoQueue(CircularFifoQueue<String> queue) {
+    private String createStringFromCircularFifoQueue(CircularFifoQueue<String> queue) {
         StringBuilder logLineText = new StringBuilder();
-        for (String line : queue) {
-            logLineText.append(line);
-            logLineText.append(LINE_SEPARATOR);
+        if (queue.size() > logLinesToReport) {
+            for (int line = (queue.size() - logLinesToReport); line < queue.size(); line++) {
+                logLineText.append(queue.get(line));
+                logLineText.append(LINE_SEPARATOR);
+            }
+        } else {
+            for (String line : queue) {
+                logLineText.append(line);
+                logLineText.append(LINE_SEPARATOR);
+            }
         }
+
         return logLineText.toString();
     }
 
-    private static String makeTextCode(String text) {
+    private String makeTextCode(String text) {
         return "```" + LINE_SEPARATOR + text + LINE_SEPARATOR + "```";
     }
 }

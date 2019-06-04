@@ -7,13 +7,16 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import rcwd.helper.MessageHelper;
 import rcwd.helper.ProcessingLogOutputStream;
 import rcwd.model.Command;
 import rcwd.properties.RcwdProperties;
 import rcwd.properties.TelegramProperties;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static rcwd.helper.MessageHelper.*;
 
@@ -29,6 +32,10 @@ public class ExecutionService {
     @Autowired
     private TelegramService telegramService;
 
+    private Map<Long, CircularFifoQueue<String>> logs = new HashMap<>();
+
+    private MessageHelper messageHelper;
+
     public void execute(List<Command> commands) {
         for (Command command : commands) {
             execute(command);
@@ -41,7 +48,11 @@ public class ExecutionService {
         System.out.println("Executing in " + properties.getCurrentDirectory());
         //verifyRcloneNotAlreadyRunning();
 
-        telegramService.sendTelegramMessage(buildTelegramExecutionStartText(command.getName()));
+        if(messageHelper == null){
+            messageHelper = new MessageHelper(properties.getMaxTelegramLogLines());
+        }
+
+        telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
         CircularFifoQueue<String> lastLogLines = new CircularFifoQueue<>(properties.getMaxTelegramLogLines());
         CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath().trim());
@@ -52,14 +63,14 @@ public class ExecutionService {
         cmdLine.addArgument("--verbose");
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines, properties.getPrintRcloneToConsole());
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
             executor.execute(cmdLine);
-            telegramService.sendTelegramMessage(buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), lastLogLines));
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), lastLogLines));
         } catch (IOException e) {
-            telegramService.sendTelegramMessage(buildFailureText(command.getName(), e.toString(), lastLogLines));
+            telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), lastLogLines));
             System.out.println(e.toString());
         }
 
