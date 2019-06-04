@@ -18,8 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static rcwd.helper.MessageHelper.*;
-
 @Service
 public class ExecutionService {
 
@@ -54,7 +52,7 @@ public class ExecutionService {
 
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
-        CircularFifoQueue<String> lastLogLines = new CircularFifoQueue<>(properties.getMaxTelegramLogLines());
+        CircularFifoQueue<String> lastLogLines = getLogQueueForCommand(command.getId());
         CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath().trim());
         cmdLine.addArgument(command.getCommand().trim());
         cmdLine.addArgument(command.getSource().getDirectory().trim());
@@ -75,6 +73,14 @@ public class ExecutionService {
         }
 
         System.out.println("Finish executing " + command.getId());
+    }
+
+    public CircularFifoQueue<String> getLogQueueForCommand(long commandId){
+        CircularFifoQueue<String> queue = logs.get(commandId);
+        if(queue == null){
+            logs.put(commandId, new CircularFifoQueue<String>(properties.getMaxLogLines()));
+        }
+        return logs.get(commandId);
     }
 
     // TODO this needs to be de-windowsafied

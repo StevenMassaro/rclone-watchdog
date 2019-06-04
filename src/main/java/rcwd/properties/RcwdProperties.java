@@ -30,6 +30,9 @@ public class RcwdProperties {
     @Value("${PRINT_RCLONE_TO_CONSOLE}")
     private Boolean printRcloneToConsole;
 
+    @Value("${MAX_LOG_LINES}")
+    private Integer maxLogLines;
+
     private final String settingsFilename = "settings.properties";
 
     public String getCurrentDirectory() {
@@ -94,5 +97,13 @@ public class RcwdProperties {
 
     public void setPrintRcloneToConsole(Boolean printRcloneToConsole) {
         this.printRcloneToConsole = printRcloneToConsole;
+    }
+
+    public Integer getMaxLogLines() {
+        return maxLogLines;
+    }
+
+    public void setMaxLogLines(Integer maxLogLines) {
+        this.maxLogLines = maxLogLines;
     }
 }
