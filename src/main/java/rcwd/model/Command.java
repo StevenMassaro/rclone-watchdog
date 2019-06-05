@@ -1,5 +1,8 @@
 package rcwd.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang.StringUtils;
+
 public class Command {
 
     private long id;
@@ -51,6 +54,11 @@ public class Command {
 
     public String getFilters() {
         return filters;
+    }
+
+    @JsonIgnore
+    public boolean hasFilters(){
+        return StringUtils.isNotEmpty(filters);
     }
 
     public void setFilters(String filters) {
