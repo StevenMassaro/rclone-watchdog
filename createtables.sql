@@ -33,3 +33,17 @@ create table rclonewatchdog.destination(
   remote varchar not null,
   directory varchar not null
 );
+
+
+CREATE VIEW rclonewatchdog.commands AS
+select
+c.id commandid,
+c.command command,
+s.directory source,
+d.remote destinationremote,
+d.directory destination,
+c.filters filters
+from rclonewatchdog.command c
+inner join rclonewatchdog.source s on c.source = s.id
+inner join rclonewatchdog.destination d on c.destination = d.id
+order by c.id;
