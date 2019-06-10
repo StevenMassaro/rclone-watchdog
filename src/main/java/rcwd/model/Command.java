@@ -64,4 +64,18 @@ public class Command {
     public void setFilters(String filters) {
         this.filters = filters;
     }
+
+    public String getCommandLine(String rcloneBasePath){
+        return rcloneBasePath + " " + getCommandLine();
+    }
+
+    public String getCommandLine(){
+        String cmd = command.trim();
+        cmd += " " + source.getDirectory().trim();
+        cmd += " " + destination.getRemote() + ":" + destination.getDirectory();
+        if(hasFilters()){
+            cmd += " " + filters;
+        }
+        return cmd;
+    }
 }

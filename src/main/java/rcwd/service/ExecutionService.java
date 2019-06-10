@@ -53,7 +53,7 @@ public class ExecutionService {
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
         CircularFifoQueue<String> lastLogLines = getLogQueueForCommand(command.getId());
-        CommandLine cmdLine = getCommandLine(command);
+        CommandLine cmdLine = CommandLine.parse(command.getCommandLine(properties.getRcloneBasePath().trim()) + " --verbose");
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
@@ -76,20 +76,6 @@ public class ExecutionService {
             logs.put(commandId, new CircularFifoQueue<String>(properties.getMaxLogLines()));
         }
         return logs.get(commandId);
-    }
-
-    private CommandLine getCommandLine(Command command){
-        String cmd = properties.getRcloneBasePath().trim();
-        cmd += " " + command.getCommand().trim();
-        cmd += " " + command.getSource().getDirectory().trim();
-        cmd += " " + command.getDestination().getRemote() + ":" + command.getDestination().getDirectory();
-        if(command.hasFilters()){
-            cmd += " " + command.getFilters();
-        }
-        cmd += " --verbose";
-
-
-        return CommandLine.parse(cmd.trim());
     }
 
     // TODO this needs to be de-windowsafied
