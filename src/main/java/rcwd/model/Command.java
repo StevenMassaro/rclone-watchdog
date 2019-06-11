@@ -71,8 +71,8 @@ public class Command {
 
     public String getCommandLine(){
         String cmd = command.trim();
-        cmd += " " + source.getDirectory().trim();
-        cmd += " " + destination.getRemote() + ":" + destination.getDirectory();
+        cmd += " \"" + source.getDirectory().trim();
+        cmd += "\" \"" + destination.getRemote() + ":" + destination.getDirectory() + "\"";
         if(hasFilters()){
             cmd += " " + filters;
         }

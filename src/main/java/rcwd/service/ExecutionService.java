@@ -5,6 +5,8 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.ShutdownHookProcessDestroyer;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
@@ -13,7 +15,9 @@ import rcwd.model.Command;
 import rcwd.properties.RcwdProperties;
 import rcwd.properties.TelegramProperties;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +41,24 @@ public class ExecutionService {
     public void execute(List<Command> commands) {
         for (Command command : commands) {
             execute(command);
+        }
+    }
+
+    /**
+     * Perform a dry run of the execution and write the rclone output to the output stream.
+     */
+    public void dryRun(Command command, OutputStream outputStream){
+        String cmd = command.getCommandLine(properties.getRcloneBasePath().trim()) + " --dry-run";
+        CommandLine cmdLine = CommandLine.parse(cmd);
+        DefaultExecutor executor = new DefaultExecutor();
+        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
+        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+        executor.setStreamHandler(streamHandler);
+        try {
+            System.out.println(cmd);
+            executor.execute(cmdLine);
+        } catch (IOException e) {
+            System.out.println(e.toString());
         }
     }
 

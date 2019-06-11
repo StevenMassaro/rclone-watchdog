@@ -10,6 +10,8 @@ import rcwd.mapper.CommandMapper;
 import rcwd.model.Command;
 import rcwd.service.ExecutionService;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -32,6 +34,13 @@ public class CommandEndpoint {
         Command command = commandMapper.get(commandId);
         executionService.execute(command);
         return Long.toString(command.getId());
+    }
+
+    @GetMapping("/{commandId}/dryrun")
+    public void dryRun(@PathVariable long commandId, HttpServletResponse response) throws IOException {
+        Command command = commandMapper.get(commandId);
+        executionService.dryRun(command, response.getOutputStream());
+        response.flushBuffer();
     }
 
     @GetMapping("/{commandId}/log")
