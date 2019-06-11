@@ -6,6 +6,7 @@
 
     <select id="list" resultMap="commandMap">
         <include refid="selectSql"/>
+        ORDER BY c.id
     </select>
 
     <sql id="selectSql">
