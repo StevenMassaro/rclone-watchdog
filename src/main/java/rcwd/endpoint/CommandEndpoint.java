@@ -29,6 +29,11 @@ public class CommandEndpoint {
         return commandMapper.list();
     }
 
+    @GetMapping("/{commandId}")
+    public Command get(@PathVariable long commandId){
+        return commandMapper.get(commandId);
+    }
+
     @GetMapping("/{commandId}/execute")
     public String execute(@PathVariable long commandId){
         Command command = commandMapper.get(commandId);

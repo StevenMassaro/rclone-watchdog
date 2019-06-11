@@ -26,6 +26,11 @@ public class ProfileEndpoint {
         return profileMapper.list();
     }
 
+    @GetMapping("/{profileId}")
+    public Profile get(@PathVariable long profileId) {
+        return profileMapper.get(profileId);
+    }
+
     @GetMapping("/{profileId}/execute")
     public String executeByProfileId(@PathVariable long profileId) {
         Profile profile = profileMapper.get(profileId);
