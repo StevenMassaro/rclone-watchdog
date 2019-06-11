@@ -16,6 +16,7 @@ import rcwd.properties.RcwdProperties;
 import rcwd.properties.TelegramProperties;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -48,14 +49,14 @@ public class ExecutionService {
      * Perform a dry run of the execution and write the rclone output to the output stream.
      */
     public void dryRun(Command command, OutputStream outputStream){
-        String cmd = command.getCommandLine(properties.getRcloneBasePath().trim()) + " --dry-run";
-        CommandLine cmdLine = CommandLine.parse(cmd);
+        CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
+        cmdLine.addArgument("--dry-run");
+        System.out.println(cmdLine.toString());
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
         executor.setStreamHandler(streamHandler);
         try {
-            System.out.println(cmd);
             executor.execute(cmdLine);
         } catch (IOException e) {
             System.out.println(e.toString());

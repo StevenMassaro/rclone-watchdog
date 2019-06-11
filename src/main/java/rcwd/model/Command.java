@@ -1,6 +1,7 @@
 package rcwd.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
 
 public class Command {
@@ -65,17 +66,18 @@ public class Command {
         this.filters = filters;
     }
 
-    public String getCommandLine(String rcloneBasePath){
-        return rcloneBasePath + " " + getCommandLine();
+    public CommandLine getCommandLine(String rcloneBasePath){
+        CommandLine cmdLine = CommandLine.parse(rcloneBasePath.trim());
+        addArgs(cmdLine);
+        return cmdLine;
     }
 
-    public String getCommandLine(){
-        String cmd = command.trim();
-        cmd += " \"" + source.getDirectory().trim();
-        cmd += "\" \"" + destination.getRemote() + ":" + destination.getDirectory() + "\"";
-        if(hasFilters()){
-            cmd += " " + filters;
+    private void addArgs(CommandLine cmdLine){
+        cmdLine.addArgument(command);
+        cmdLine.addArgument(source.getDirectory().trim());
+        cmdLine.addArgument(destination.getRemote() + ":" + destination.getDirectory());
+        if (hasFilters()) {
+            cmdLine.addArgument(filters, false);
         }
-        return cmd;
     }
 }
