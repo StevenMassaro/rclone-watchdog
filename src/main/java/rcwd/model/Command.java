@@ -1,8 +1,11 @@
 package rcwd.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
+
+import java.util.List;
 
 public class Command {
 
@@ -11,7 +14,7 @@ public class Command {
     private String command;
     private Directory source;
     private Destination destination;
-    private String filters;
+    private List<Filter> filters;
 
     public long getId() {
         return id;
@@ -53,16 +56,16 @@ public class Command {
         this.destination = destination;
     }
 
-    public String getFilters() {
+    public List<Filter> getFilters() {
         return filters;
     }
 
     @JsonIgnore
     public boolean hasFilters(){
-        return StringUtils.isNotEmpty(filters);
+        return CollectionUtils.isNotEmpty(filters);
     }
 
-    public void setFilters(String filters) {
+    public void setFilters(List<Filter> filters) {
         this.filters = filters;
     }
 
@@ -77,7 +80,9 @@ public class Command {
         cmdLine.addArgument(source.getDirectory().trim());
         cmdLine.addArgument(destination.getRemote() + ":" + destination.getDirectory());
         if (hasFilters()) {
-            cmdLine.addArgument(filters, false);
+            for(Filter filter : filters){
+                cmdLine.addArgument(filter.getFilter(), false);
+            }
         }
     }
 }

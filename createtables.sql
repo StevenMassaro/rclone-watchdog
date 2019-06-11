@@ -16,7 +16,13 @@ create table rclonewatchdog.command(
   command varchar not null,
   source int not null,
   destination int not null,
-  filters varchar null
+  filter int null
+);
+
+drop table if exists rclonewatchdog.filter;
+create table rclonewatchdog.filter(
+  id serial not null,
+  filter varchar not null
 );
 
 drop table if exists rclonewatchdog.source;

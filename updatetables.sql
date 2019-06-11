@@ -1,0 +1,1 @@
+alter table rclonewatchdog.command add column filter int null;

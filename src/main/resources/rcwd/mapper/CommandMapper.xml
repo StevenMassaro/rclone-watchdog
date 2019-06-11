@@ -13,10 +13,12 @@
         SELECT
         <include refid="commandColumns"/>,
         <include refid="sourceColumns"/>,
-        <include refid="destinationColumns"/>
+        <include refid="destinationColumns"/>,
+        <include refid="filterColumns"/>
         FROM rclonewatchdog.command c
         INNER JOIN rclonewatchdog.source s ON c.source = s.id
         INNER JOIN rclonewatchdog.destination d ON c.destination = d.id
+        LEFT JOIN rclonewatchdog.filter f ON c.filter = f.id
     </sql>
 
     <select id="get" resultMap="commandMap">
@@ -27,8 +29,7 @@
     <sql id="commandColumns">
         c.id cid,
         c.command ccommand,
-        c.name cname,
-        c.filters cfilters
+        c.name cname
     </sql>
 
     <sql id="sourceColumns">
@@ -44,13 +45,18 @@
         d.remote dremote
     </sql>
 
+    <sql id="filterColumns">
+        f.id fid,
+        f.filter ffilter
+    </sql>
+
     <resultMap id="commandMap" type="rcwd.model.Command">
         <id property="id" column="cid" javaType="long"/>
         <result property="name" column="cname"/>
         <result property="command" column="ccommand"/>
-        <result property="filters" column="cfilters"/>
         <association property="source" resultMap="sourceMap"/>
         <association property="destination" resultMap="destinationMap"/>
+        <association property="filters" resultMap="filterMap"/>
     </resultMap>
 
     <resultMap id="sourceMap" type="rcwd.model.Directory">
@@ -64,6 +70,11 @@
         <result property="name" column="dname"/>
         <result property="directory" column="ddirectory"/>
         <result property="remote" column="dremote"/>
+    </resultMap>
+
+    <resultMap id="filterMap" type="rcwd.model.Filter">
+        <id property="id" column="fid"/>
+        <result property="filter" column="ffilter"/>
     </resultMap>
 
 </mapper>
