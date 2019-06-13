@@ -52,6 +52,15 @@ class CommandListComponent extends Component {
                 });
     };
 
+    execute = (id) => {
+        fetch("./command/" + id + "/execute");
+        this.fetchCommands();
+    };
+
+    dryRun = (id) => {
+        fetch("./command/" + id + "/dryrun");
+    };
+
     handleRestResponse = (res) => {
         if (res.ok) {
             return res.json();
@@ -61,7 +70,6 @@ class CommandListComponent extends Component {
     };
 
     showLog = (id) => {
-        // window.open("/command/" + id + "/log", '_blank');
         this.setState({
             logId: id
         });
@@ -98,7 +106,7 @@ class CommandListComponent extends Component {
                             {
                                 Header: "ID",
                                 accessor: "id",
-                                maxWidth: 20
+                                maxWidth: 30
                             },
                             {
                                 Header: "Name",
@@ -106,12 +114,32 @@ class CommandListComponent extends Component {
                                 maxWidth: 150
                             },
                             {
-                                Header: "Log",
-                                id: "log",
+                                Header: "Source",
+                                id: "source",
+                                accessor: s => s.source.directory
+                            },
+                            {
+                                Header: "Destination",
+                                id: "destination",
+                                accessor: d => d.destination.remote + ":" + d.destination.directory
+                            },
+                            {
+                                Header: "Actions",
+                                id: "Actions",
                                 Cell: row => {
-                                    return (<Button
-                                        onClick={() => this.showLog(row.original.id)}
-                                    >Show log</Button>);
+                                    return (<span>
+                                        <Button
+                                            onClick={() => this.showLog(row.original.id)}
+                                        >Log</Button>
+                                        <Button
+                                            onClick={() => this.execute(row.original.id)}
+                                        >Execute</Button>
+                                        <Button
+                                            onClick={() => this.dryRun(row.original.id)}
+                                        >Dry run</Button>
+
+
+                                    </span>);
                                 },
                             }
                         ]
