@@ -94,6 +94,7 @@ class CommandListComponent extends Component {
                     }}>
                         <Button onClick={() => this.showLog(null)}>Close</Button>
                         <LazyLog url={"/rclone-watchdog/command/" + this.state.logId + "/log"}
+                                 fetchOptions={{credentials: 'include'}}
                                  follow={true}
                         />
                     </div>
