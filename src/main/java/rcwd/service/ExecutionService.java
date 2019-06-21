@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
 import rcwd.helper.ProcessingLogOutputStream;
+import rcwd.mapper.CommandMapper;
 import rcwd.model.Command;
+import rcwd.model.StatusEnum;
 import rcwd.properties.RcwdProperties;
 import rcwd.properties.TelegramProperties;
 
@@ -35,6 +37,9 @@ public class ExecutionService {
     @Autowired
     private TelegramService telegramService;
 
+    @Autowired
+    private CommandMapper commandMapper;
+
     private Map<Long, CircularFifoQueue<String>> logs = new HashMap<>();
 
     private MessageHelper messageHelper;
@@ -49,6 +54,8 @@ public class ExecutionService {
      * Perform a dry run of the execution and write the rclone output to the output stream.
      */
     public void dryRun(Command command, OutputStream outputStream){
+        StatusEnum status = StatusEnum.EXECUTING_DRY_RUN;
+        commandMapper.setStatus(command.getId(), status.toString());
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--dry-run");
         System.out.println(cmdLine.toString());
@@ -58,14 +65,19 @@ public class ExecutionService {
         executor.setStreamHandler(streamHandler);
         try {
             executor.execute(cmdLine);
+            status = StatusEnum.EXECUTED;
         } catch (IOException e) {
             System.out.println(e.toString());
+            status = StatusEnum.FAILED;
         }
+        commandMapper.setStatus(command.getId(), status.toString());
     }
 
     public void execute(Command command){
         long startTime = System.nanoTime();
         System.out.println("Begin executing " + command.getId());
+        StatusEnum status = StatusEnum.EXECUTING;
+        commandMapper.setStatus(command.getId(), status.toString());
         System.out.println("Executing in " + properties.getCurrentDirectory());
         //verifyRcloneNotAlreadyRunning();
 
@@ -86,10 +98,13 @@ public class ExecutionService {
         try {
             executor.execute(cmdLine);
             telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), lastLogLines));
+            status = StatusEnum.EXECUTED;
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), lastLogLines));
             System.out.println(e.toString());
+            status = StatusEnum.FAILED;
         }
+        commandMapper.setStatus(command.getId(), status.toString());
 
         System.out.println("Finish executing " + command.getId());
     }

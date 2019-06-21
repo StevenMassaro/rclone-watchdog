@@ -19,12 +19,20 @@
         INNER JOIN rclonewatchdog.source s ON c.source = s.id
         INNER JOIN rclonewatchdog.destination d ON c.destination = d.id
         LEFT JOIN rclonewatchdog.filter f ON c.filter = f.id
+        LEFT JOIN rclonewatchdog.status st ON c.id = st.commandid
+        INNER JOIN rclonewatchdog.statustype sty ON st.statustype = sty.statustype
     </sql>
 
     <select id="get" resultMap="commandMap">
         <include refid="selectSql"/>
         WHERE c.id = #{commandId}
     </select>
+
+    <update id="setStatus">
+        UPDATE rclonewatchdog.command c
+        SET c.status = #{status}, c.statusChangeDate = current_timestamp
+        WHERE c.id = #{id}
+    </update>
 
     <sql id="commandColumns">
         c.id cid,
@@ -54,6 +62,8 @@
         <id property="id" column="cid" javaType="long"/>
         <result property="name" column="cname"/>
         <result property="command" column="ccommand"/>
+        <result property="status" column="cstatus"/>
+        <result property="statusChangeDate" column="cstatusChangeDate"/>
         <association property="source" resultMap="sourceMap"/>
         <association property="destination" resultMap="destinationMap"/>
         <association property="filters" resultMap="filterMap"/>
