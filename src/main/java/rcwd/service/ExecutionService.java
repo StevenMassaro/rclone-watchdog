@@ -75,19 +75,19 @@ public class ExecutionService {
 
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
-        CircularFifoQueue<String> lastLogLines = getLogQueueForCommand(command.getId());
+        CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId());
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--verbose");
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
             executor.execute(cmdLine);
-            telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), lastLogLines));
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
         } catch (IOException e) {
-            telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), lastLogLines));
+            telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             System.out.println(e.toString());
         }
 

@@ -8,18 +8,18 @@ public class ProcessingLogOutputStream extends LogOutputStream {
 
     private TelegramService telegramHelper;
     private String task;
-    private CircularFifoQueue<String> lastLogLines;
+    private CircularFifoQueue<String> logQueue;
     private boolean printRcloneToConsole;
     private MessageHelper messageHelper;
 
-    public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> lastLogLines, int logLinesToReport) {
-        this(telegramHelper, task, lastLogLines, logLinesToReport, false);
+    public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> logQueue, int logLinesToReport) {
+        this(telegramHelper, task, logQueue, logLinesToReport, false);
     }
 
-    public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> lastLogLines, int logLinesToReport, Boolean printRcloneToConsole) {
+    public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> logQueue, int logLinesToReport, Boolean printRcloneToConsole) {
         this.telegramHelper = telegramHelper;
         this.task = task;
-        this.lastLogLines = lastLogLines;
+        this.logQueue = logQueue;
         this.printRcloneToConsole = printRcloneToConsole;
         messageHelper = new MessageHelper(logLinesToReport);
     }
@@ -31,7 +31,7 @@ public class ProcessingLogOutputStream extends LogOutputStream {
                 telegramHelper.sendTelegramMessage(messageHelper.buildErrorText(task, line));
             }
         }
-        lastLogLines.add(line);
+        logQueue.add(line);
 
         if (printRcloneToConsole) {
             System.out.println(line);
