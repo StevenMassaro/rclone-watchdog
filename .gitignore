@@ -5,6 +5,10 @@
 /src/frontend/node/*
 /src/frontend/build/*
 /src/main/resources/static/*
+.idea/*
+rclone-watchdog.iml
+target/*
+
 /.pnp
 .pnp.js
 
