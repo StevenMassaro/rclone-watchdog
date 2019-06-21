@@ -139,6 +139,9 @@ class CommandListComponent extends Component {
                                             onClick={() => this.dryRun(row.original.id)}
                                             disabled={}
                                         >Dry run</Button>
+                                        <Button
+                                            disabled
+                                        >End</Button>
 
 
                                     </span>);
