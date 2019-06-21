@@ -61,6 +61,10 @@ class CommandListComponent extends Component {
         fetch("./command/" + id + "/dryrun");
     };
 
+    kill = (id) => {
+        fetch("./command/" + id + "/kill");
+    };
+
     handleRestResponse = (res) => {
         if (res.ok) {
             return res.json();
@@ -137,11 +141,11 @@ class CommandListComponent extends Component {
                                         >Execute</Button>
                                         <Button
                                             onClick={() => this.dryRun(row.original.id)}
-                                            disabled={}
+                                            disabled
                                         >Dry run</Button>
                                         <Button
-                                            disabled
-                                        >End</Button>
+                                            onClick={() => this.kill(row.original.id)}
+                                        >Kill</Button>
 
 
                                     </span>);
