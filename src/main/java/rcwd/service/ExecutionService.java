@@ -1,10 +1,7 @@
 package rcwd.service;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.exec.ShutdownHookProcessDestroyer;
+import org.apache.commons.exec.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.exec.ExecuteWatchdog.INFINITE_TIMEOUT;
+
 @Service
 public class ExecutionService {
 
@@ -41,6 +40,7 @@ public class ExecutionService {
     private CommandMapper commandMapper;
 
     private Map<Long, CircularFifoQueue<String>> logs = new HashMap<>();
+    private Map<Long, DefaultExecutor> executors = new HashMap<>();
 
     private MessageHelper messageHelper;
 
@@ -87,20 +87,19 @@ public class ExecutionService {
 
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
-        CircularFifoQueue<String> lastLogLines = getLogQueueForCommand(command.getId());
+        CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId());
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--verbose");
-        DefaultExecutor executor = new DefaultExecutor();
-        executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), lastLogLines, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
+        DefaultExecutor executor = getExecutorForCommand(command.getId(), true);
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
             executor.execute(cmdLine);
-            telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), lastLogLines));
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
             status = StatusEnum.EXECUTED;
         } catch (IOException e) {
-            telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), lastLogLines));
+            telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             System.out.println(e.toString());
             status = StatusEnum.FAILED;
         }
@@ -109,12 +108,32 @@ public class ExecutionService {
         System.out.println("Finish executing " + command.getId());
     }
 
+    public void kill(long commandId) {
+        getExecutorForCommand(commandId, false).getWatchdog().destroyProcess();
+    }
+
     public CircularFifoQueue<String> getLogQueueForCommand(long commandId){
         CircularFifoQueue<String> queue = logs.get(commandId);
         if(queue == null){
             logs.put(commandId, new CircularFifoQueue<String>(properties.getMaxLogLines()));
         }
         return logs.get(commandId);
+    }
+
+    /**
+     * Returns the executor associated with a particular command.
+     *
+     * @param createNew if true, and if no executor exists for the specified command, a new executor will be created
+     */
+    private DefaultExecutor getExecutorForCommand(long commandId, boolean createNew) {
+        DefaultExecutor executor = executors.get(commandId);
+        if (executor == null && createNew) {
+            executor = new DefaultExecutor();
+            executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
+            executor.setWatchdog(new ExecuteWatchdog(INFINITE_TIMEOUT));
+            executors.put(commandId, executor);
+        }
+        return executors.get(commandId);
     }
 
     // TODO this needs to be de-windowsafied

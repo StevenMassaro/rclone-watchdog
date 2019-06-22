@@ -58,4 +58,9 @@ public class CommandEndpoint {
         }
         return response.toString();
     }
+
+    @GetMapping("/{commandId}/kill")
+    public void kill(@PathVariable long commandId){
+        executionService.kill(commandId);
+    }
 }
