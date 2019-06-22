@@ -131,6 +131,7 @@ class CommandListComponent extends Component {
                             {
                                 Header: "Actions",
                                 id: "Actions",
+                                style: { 'white-space': 'unset' },
                                 Cell: row => {
                                     return (<span>
                                         <Button
