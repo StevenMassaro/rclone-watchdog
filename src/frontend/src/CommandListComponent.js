@@ -154,7 +154,7 @@ class CommandListComponent extends Component {
                             }
                         ]
                     }
-                    // defaultPageSize={stationDetail.prices.length}
+                    defaultPageSize={(this.state.commands && this.state.commands.length) || 10}
                     showPagination={false}
                     showPageSizeOptions={false}
                     getTfootProps={() => ({
