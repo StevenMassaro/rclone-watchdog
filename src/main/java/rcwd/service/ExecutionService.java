@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
 import rcwd.helper.ProcessingLogOutputStream;
 import rcwd.mapper.CommandMapper;
+import rcwd.mapper.StatusMapper;
 import rcwd.model.Command;
 import rcwd.model.StatusEnum;
 import rcwd.properties.RcwdProperties;
@@ -39,6 +40,9 @@ public class ExecutionService {
     @Autowired
     private CommandMapper commandMapper;
 
+    @Autowired
+    private StatusMapper statusMapper;
+
     private Map<Long, CircularFifoQueue<String>> logs = new HashMap<>();
     private Map<Long, DefaultExecutor> executors = new HashMap<>();
 
@@ -54,8 +58,7 @@ public class ExecutionService {
      * Perform a dry run of the execution and write the rclone output to the output stream.
      */
     public void dryRun(Command command, OutputStream outputStream){
-        StatusEnum status = StatusEnum.EXECUTING_DRY_RUN;
-        commandMapper.setStatus(command.getId(), status.toString());
+        statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_START, null);
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--dry-run");
         System.out.println(cmdLine.toString());
@@ -65,19 +68,17 @@ public class ExecutionService {
         executor.setStreamHandler(streamHandler);
         try {
             executor.execute(cmdLine);
-            status = StatusEnum.EXECUTED;
+            statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_SUCCESS, null);
         } catch (IOException e) {
             System.out.println(e.toString());
-            status = StatusEnum.FAILED;
+            statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_FAIL, null);
         }
-        commandMapper.setStatus(command.getId(), status.toString());
     }
 
     public void execute(Command command){
         long startTime = System.nanoTime();
         System.out.println("Begin executing " + command.getId());
-        StatusEnum status = StatusEnum.EXECUTING;
-        commandMapper.setStatus(command.getId(), status.toString());
+        statusMapper.insert(command.getId(), StatusEnum.EXECUTION_START, null);
         System.out.println("Executing in " + properties.getCurrentDirectory());
         //verifyRcloneNotAlreadyRunning();
 
@@ -97,13 +98,12 @@ public class ExecutionService {
         try {
             executor.execute(cmdLine);
             telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
-            status = StatusEnum.EXECUTED;
+            statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             System.out.println(e.toString());
-            status = StatusEnum.FAILED;
+            statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
         }
-        commandMapper.setStatus(command.getId(), status.toString());
 
         System.out.println("Finish executing " + command.getId());
     }

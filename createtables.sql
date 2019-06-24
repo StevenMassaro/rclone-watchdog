@@ -25,7 +25,7 @@ create table rclonewatchdog.status(
   statustype int not null,
   description varchar,
   modifieddate timestamp default now()
-)
+);
 
 drop table if exists rclonewatchdog.statustype;
 create table rclonewatchdog.statustype(
@@ -34,12 +34,12 @@ create table rclonewatchdog.statustype(
   description varchar
 );
 
-insert into rclonewatchdog.statustype (statustype, description) values (0, 'Execution started');
-insert into rclonewatchdog.statustype (statustype, description) values (1, 'Execution failed');
-insert into rclonewatchdog.statustype (statustype, description) values (2, 'Execution success');
-insert into rclonewatchdog.statustype (statustype, description) values (3, 'Dry run execution started');
-insert into rclonewatchdog.statustype (statustype, description) values (4, 'Dry run execution failed');
-insert into rclonewatchdog.statustype (statustype, description) values (5, 'Dry run execution success');
+insert into rclonewatchdog.statustype (statustype, name) values (0, 'Execution started');
+insert into rclonewatchdog.statustype (statustype, name) values (1, 'Execution failed');
+insert into rclonewatchdog.statustype (statustype, name) values (2, 'Execution success');
+insert into rclonewatchdog.statustype (statustype, name) values (3, 'Dry run execution started');
+insert into rclonewatchdog.statustype (statustype, name) values (4, 'Dry run execution failed');
+insert into rclonewatchdog.statustype (statustype, name) values (5, 'Dry run execution success');
 
 drop table if exists rclonewatchdog.filter;
 create table rclonewatchdog.filter(

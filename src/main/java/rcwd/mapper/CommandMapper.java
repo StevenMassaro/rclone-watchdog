@@ -12,6 +12,4 @@ public interface CommandMapper {
     List<Command> list();
 
     Command get(@Param("commandId") long commandId);
-
-    void setStatus(@Param("commandId") long commandId, @Param("status") String status);
 }
