@@ -21,6 +21,7 @@ create table rclonewatchdog.command(
 
 drop table if exists rclonewatchdog.status;
 create table rclonewatchdog.status(
+  id serial not null,
   commandid int not null,
   statustype int not null,
   description varchar,
