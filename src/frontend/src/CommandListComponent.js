@@ -129,6 +129,12 @@ class CommandListComponent extends Component {
                                 accessor: d => d.destination.remote + ":" + d.destination.directory
                             },
                             {
+                                Header: "Last status",
+                                id: "status",
+                                maxWidth: 175,
+                                accessor: s => (s.statusChangeDate && s.status) ? (<span>{s.statusChangeDate}<br/>{s.status}</span>) : ""
+                            },
+                            {
                                 Header: "Actions",
                                 id: "Actions",
                                 style: { 'white-space': 'unset' },

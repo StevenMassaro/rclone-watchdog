@@ -1,5 +1,6 @@
 package rcwd.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.CommandLine;
@@ -17,6 +18,7 @@ public class Command {
     private Destination destination;
     private List<Filter> filters;
     private String status;
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss a", timezone = "America/New_York")
     private Date statusChangeDate;
 
     public long getId() {
