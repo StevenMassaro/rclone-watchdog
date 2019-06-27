@@ -121,12 +121,16 @@ class CommandListComponent extends Component {
                             {
                                 Header: "Source",
                                 id: "source",
+                                maxWidth: 250,
+                                style: { 'white-space': 'unset' },
                                 accessor: s => s.source.directory
                             },
                             {
                                 Header: "Destination",
                                 id: "destination",
-                                accessor: d => d.destination.remote + ":" + d.destination.directory
+                                maxWidth: 250,
+                                style: { 'white-space': 'unset' },
+                                accessor: d => <span>{d.destination.remote}<br/>{d.destination.directory}</span>
                             },
                             {
                                 Header: "Last status",
@@ -153,10 +157,8 @@ class CommandListComponent extends Component {
                                         <Button
                                             onClick={() => this.kill(row.original.id)}
                                         >Kill</Button>
-
-
                                     </span>);
-                                },
+                                }
                             }
                         ]
                     }
@@ -167,14 +169,9 @@ class CommandListComponent extends Component {
                         style: {display: "none"}
                     })}
                 />
-                {/*<Container style={{ marginTop: '3em' }}>*/}
-                {/**/}
-                {/*</Container>*/}
             </div>
         );
-
     }
-
 }
 
 export default CommandListComponent;
