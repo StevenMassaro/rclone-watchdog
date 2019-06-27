@@ -5,6 +5,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 public class Command {
@@ -15,6 +16,8 @@ public class Command {
     private Directory source;
     private Destination destination;
     private List<Filter> filters;
+    private String status;
+    private Date statusChangeDate;
 
     public long getId() {
         return id;
@@ -67,6 +70,22 @@ public class Command {
 
     public void setFilters(List<Filter> filters) {
         this.filters = filters;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Date getStatusChangeDate() {
+        return statusChangeDate;
+    }
+
+    public void setStatusChangeDate(Date statusChangeDate) {
+        this.statusChangeDate = statusChangeDate;
     }
 
     public CommandLine getCommandLine(String rcloneBasePath){

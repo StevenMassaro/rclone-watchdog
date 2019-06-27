@@ -14,11 +14,24 @@
         <include refid="commandColumns"/>,
         <include refid="sourceColumns"/>,
         <include refid="destinationColumns"/>,
-        <include refid="filterColumns"/>
+        <include refid="filterColumns"/>,
+        st.name ststatus,
+        st.modifieddate stmodifieddate
         FROM rclonewatchdog.command c
         INNER JOIN rclonewatchdog.source s ON c.source = s.id
         INNER JOIN rclonewatchdog.destination d ON c.destination = d.id
         LEFT JOIN rclonewatchdog.filter f ON c.filter = f.id
+        FULL OUTER JOIN (
+            SELECT st.id, st.commandid, st.statustype, st.description, st.modifieddate, sty.statustype, sty.name, sty.description
+            FROM rclonewatchdog.status st
+            INNER JOIN rclonewatchdog.statustype sty on sty.statustype = st.statustype
+            INNER JOIN (
+                SELECT MAX(status.id) maxstid,
+                commandid commandid
+                FROM rclonewatchdog.status status
+                GROUP BY commandid
+            ) stmax ON stmax.maxstid = st.id AND stmax.commandid = st.commandid
+        ) st ON st.commandid = c.id
     </sql>
 
     <select id="get" resultMap="commandMap">
@@ -54,6 +67,8 @@
         <id property="id" column="cid" javaType="long"/>
         <result property="name" column="cname"/>
         <result property="command" column="ccommand"/>
+        <result property="status" column="ststatus"/>
+        <result property="statusChangeDate" column="stmodifieddate"/>
         <association property="source" resultMap="sourceMap"/>
         <association property="destination" resultMap="destinationMap"/>
         <association property="filters" resultMap="filterMap"/>
