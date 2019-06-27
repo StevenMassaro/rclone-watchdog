@@ -162,7 +162,7 @@ class CommandListComponent extends Component {
                             }
                         ]
                     }
-                    defaultPageSize={(this.state.commands && this.state.commands.length) || 10}
+                    minRows={0}
                     showPagination={false}
                     showPageSizeOptions={false}
                     getTfootProps={() => ({
