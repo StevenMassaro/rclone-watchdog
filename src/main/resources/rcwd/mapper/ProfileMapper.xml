@@ -26,7 +26,7 @@
         INNER JOIN rclonewatchdog.command c ON p.commandid = c.id
         INNER JOIN rclonewatchdog.source s ON c.source = s.id
         INNER JOIN rclonewatchdog.destination d ON c.destination = d.id
-        JOIN rclonewatchdog.filter f ON c.filter = f.id
+        LEFT JOIN rclonewatchdog.filter f ON c.filter = f.id
     </sql>
 
     <resultMap id="profileMap" type="rcwd.model.Profile">
