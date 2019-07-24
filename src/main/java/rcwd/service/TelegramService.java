@@ -46,8 +46,9 @@ public class TelegramService {
                         .addHeader("Content-Type", "application/json")
                         .build();
                 Response response = client.newCall(request).execute();
-                return response.toString();
-
+                String responseString = response.toString();
+                response.close();
+                return responseString;
             } catch (URISyntaxException e) {
                 System.out.println("Failed to build Telegram URI");
                 e.printStackTrace();
