@@ -2,11 +2,10 @@ package rcwd.service;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
+import rcwd.helper.ProcessResultHandler;
 import rcwd.helper.ProcessingLogOutputStream;
 import rcwd.mapper.CommandMapper;
 import rcwd.mapper.StatusMapper;
@@ -15,8 +14,6 @@ import rcwd.model.StatusEnum;
 import rcwd.properties.RcwdProperties;
 import rcwd.properties.TelegramProperties;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -75,7 +72,7 @@ public class ExecutionService {
         }
     }
 
-    public void execute(Command command){
+    public ExecuteResultHandler execute(Command command){
         long startTime = System.nanoTime();
         System.out.println("Begin executing " + command.getId());
         statusMapper.insert(command.getId(), StatusEnum.EXECUTION_START, null);
@@ -92,13 +89,12 @@ public class ExecutionService {
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--verbose");
         DefaultExecutor executor = getExecutorForCommand(command.getId(), true);
+        ProcessResultHandler resultHandler = new ProcessResultHandler(messageHelper, telegramService, statusMapper, command, logQueue, startTime);
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
-            executor.execute(cmdLine);
-            telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
-            statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
+            executor.execute(cmdLine, resultHandler);
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             System.out.println(e.toString());
@@ -106,6 +102,7 @@ public class ExecutionService {
         }
 
         System.out.println("Finish executing " + command.getId());
+        return resultHandler;
     }
 
     public void kill(long commandId) {

@@ -53,8 +53,8 @@ class CommandListComponent extends Component {
     };
 
     execute = (id) => {
-        fetch("./command/" + id + "/execute");
-        this.fetchCommands();
+        fetch("./command/" + id + "/execute")
+            .then(this.fetchCommands);
     };
 
     dryRun = (id) => {
@@ -62,7 +62,8 @@ class CommandListComponent extends Component {
     };
 
     kill = (id) => {
-        fetch("./command/" + id + "/kill");
+        fetch("./command/" + id + "/kill")
+            .then(this.fetchCommands);
     };
 
     handleRestResponse = (res) => {
