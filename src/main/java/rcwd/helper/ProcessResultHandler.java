@@ -32,7 +32,6 @@ public class ProcessResultHandler extends DefaultExecuteResultHandler {
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
         statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
         super.onProcessComplete(exitValue);
-
     }
 
     @Override
