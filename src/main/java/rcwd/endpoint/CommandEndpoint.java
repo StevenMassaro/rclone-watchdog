@@ -37,7 +37,7 @@ public class CommandEndpoint {
     @GetMapping("/{commandId}/execute")
     public String execute(@PathVariable long commandId){
         Command command = commandMapper.get(commandId);
-        executionService.execute(command);
+        executionService.execute(command, true);
         return Long.toString(command.getId());
     }
 

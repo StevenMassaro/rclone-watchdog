@@ -47,7 +47,7 @@ public class ExecutionService {
 
     public void execute(List<Command> commands) {
         for (Command command : commands) {
-            execute(command);
+            execute(command, false);
         }
     }
 
@@ -72,7 +72,12 @@ public class ExecutionService {
         }
     }
 
-    public ExecuteResultHandler execute(Command command){
+    /**
+     * @param spawnNewThread if true, a new thread will be spawned and this method will return immediately,
+     *                       executing the command in the background. if false, this will execute in the current
+     *                       thread and this method will only return once the execution finishes
+     */
+    public void execute(Command command, boolean spawnNewThread) {
         long startTime = System.nanoTime();
         System.out.println("Begin executing " + command.getId());
         statusMapper.insert(command.getId(), StatusEnum.EXECUTION_START, null);
@@ -89,12 +94,18 @@ public class ExecutionService {
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--verbose");
         DefaultExecutor executor = getExecutorForCommand(command.getId(), true);
-        ProcessResultHandler resultHandler = new ProcessResultHandler(messageHelper, telegramService, statusMapper, command, logQueue, startTime);
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
-            executor.execute(cmdLine, resultHandler);
+            if (spawnNewThread) {
+                ProcessResultHandler resultHandler = new ProcessResultHandler(messageHelper, telegramService, statusMapper, command, logQueue, startTime);
+                executor.execute(cmdLine, resultHandler);
+            } else {
+                executor.execute(cmdLine);
+                telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
+                statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
+            }
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             System.out.println(e.toString());
@@ -102,7 +113,6 @@ public class ExecutionService {
         }
 
         System.out.println("Finish executing " + command.getId());
-        return resultHandler;
     }
 
     public void kill(long commandId) {
