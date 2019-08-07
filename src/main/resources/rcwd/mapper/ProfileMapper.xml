@@ -6,12 +6,13 @@
 
     <select id="list" resultMap="profileMap">
         <include refid="selectProfile"/>
-        ORDER BY c.id
+        ORDER BY p.id, c.id, f.id
     </select>
 
     <select id="get" resultMap="profileMap">
         <include refid="selectProfile"/>
         WHERE p.id = #{profileId}
+        ORDER BY c.id, f.id
     </select>
 
     <sql id="selectProfile">

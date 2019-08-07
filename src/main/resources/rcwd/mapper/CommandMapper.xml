@@ -6,7 +6,7 @@
 
     <select id="list" resultMap="commandMap">
         <include refid="selectSql"/>
-        ORDER BY c.id
+        ORDER BY c.id, f.id
     </select>
 
     <sql id="selectSql">
@@ -37,6 +37,7 @@
     <select id="get" resultMap="commandMap">
         <include refid="selectSql"/>
         WHERE c.id = #{commandId}
+        ORDER BY f.id
     </select>
 
     <sql id="commandColumns">
