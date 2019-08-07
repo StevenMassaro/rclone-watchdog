@@ -94,6 +94,7 @@ public class ExecutionService {
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--verbose");
         cmdLine.addArgument("--delete-before");
+        cmdLine.addArgument("--delete-excluded");
         DefaultExecutor executor = getExecutorForCommand(command.getId(), true);
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
