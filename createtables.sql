@@ -6,7 +6,8 @@ drop table if exists rclonewatchdog.profile;
 create table rclonewatchdog.profile(
   id int not null,
   name varchar(200) not null,
-  commandId int not null
+  commandId int not null,
+  primary key(id, name, commandId)
 );
 
 drop table if exists rclonewatchdog.command;
@@ -16,12 +17,13 @@ create table rclonewatchdog.command(
   command varchar not null,
   source int not null,
   destination int not null,
-  filter int null
+  filter int null,
+  primary key(name, command, source, destination, filter)
 );
 
 drop table if exists rclonewatchdog.status;
 create table rclonewatchdog.status(
-  id serial not null,
+  id serial primary key,
   commandid int not null,
   statustype int not null,
   description varchar,
@@ -32,7 +34,8 @@ drop table if exists rclonewatchdog.statustype;
 create table rclonewatchdog.statustype(
   statustype int not null,
   name varchar(200) not null,
-  description varchar
+  description varchar,
+  primary key (statustype, name)
 );
 
 insert into rclonewatchdog.statustype (statustype, name) values (0, 'Execution started');
@@ -45,14 +48,15 @@ insert into rclonewatchdog.statustype (statustype, name) values (5, 'Dry run exe
 drop table if exists rclonewatchdog.filter;
 create table rclonewatchdog.filter(
   id serial not null,
-  filter varchar not null
+  filter varchar primary key
 );
 
 drop table if exists rclonewatchdog.source;
 create table rclonewatchdog.source(
   id serial not null,
   name varchar(200) not null,
-  directory varchar not null
+  directory varchar not null,
+  primary key (name, directory)
 );
 
 drop table if exists rclonewatchdog.destination;
@@ -60,7 +64,8 @@ create table rclonewatchdog.destination(
   id serial not null,
   name varchar(200) not null,
   remote varchar not null,
-  directory varchar not null
+  directory varchar not null,
+  primary key(name, remote, directory)
 );
 
 
