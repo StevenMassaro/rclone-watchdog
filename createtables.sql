@@ -25,14 +25,14 @@ drop table if exists rclonewatchdog.status;
 create table rclonewatchdog.status(
   id serial primary key,
   commandid int not null,
-  statustype int not null,
+  statustype int not null references statustype(statustype),
   description varchar,
   modifieddate timestamp default now()
 );
 
 drop table if exists rclonewatchdog.statustype;
 create table rclonewatchdog.statustype(
-  statustype int not null,
+  statustype int not null unique,
   name varchar(200) not null,
   description varchar,
   primary key (statustype, name)
