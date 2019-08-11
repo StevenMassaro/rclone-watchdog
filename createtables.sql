@@ -15,9 +15,9 @@ create table rclonewatchdog.command(
   id serial not null,
   name varchar(200) not null,
   command varchar not null,
-  source int not null,
-  destination int not null,
-  filter int null,
+  source int not null references source(id),
+  destination int not null references destination(id),
+  filter int null references filter(id),
   primary key(name, command, source, destination, filter)
 );
 
@@ -47,13 +47,13 @@ insert into rclonewatchdog.statustype (statustype, name) values (5, 'Dry run exe
 
 drop table if exists rclonewatchdog.filter;
 create table rclonewatchdog.filter(
-  id serial not null,
+  id serial not null unique,
   filter varchar primary key
 );
 
 drop table if exists rclonewatchdog.source;
 create table rclonewatchdog.source(
-  id serial not null,
+  id serial not null unique,
   name varchar(200) not null,
   directory varchar not null,
   primary key (name, directory)
@@ -61,7 +61,7 @@ create table rclonewatchdog.source(
 
 drop table if exists rclonewatchdog.destination;
 create table rclonewatchdog.destination(
-  id serial not null,
+  id serial not null unique,
   name varchar(200) not null,
   remote varchar not null,
   directory varchar not null,
