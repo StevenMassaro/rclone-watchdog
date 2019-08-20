@@ -141,6 +141,14 @@
                     <target>7</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>1.4.9</version>
+                <configuration>
+                    <repository>${docker.image.prefix}/${project.artifactId}</repository>
+                </configuration>
+            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -149,6 +157,10 @@
             </resource>
         </resources>
     </build>
+
+    <properties>
+        <docker.image.prefix>stevenmassaro</docker.image.prefix>
+    </properties>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
