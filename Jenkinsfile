@@ -23,6 +23,7 @@ node {
       archiveArtifacts 'target/*.jar'
    }
    stage('Publish docker image') {
+       sh label: '', script: 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
        sh label: '', script: 'docker push stevenmassaro/rclone-watchdog:latest'
    }
 }
