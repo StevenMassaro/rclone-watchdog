@@ -1,5 +1,6 @@
 node {
    def mvnHome
+   properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')), disableConcurrentBuilds()])
    stage('Preparation') { // for display purposes
       // Get some code from a GitHub repository
       checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'c59ac799-d4ab-41a3-ad8d-da57213c2672', url: 'http://tower:9080/StevenMassaro/rclone-watchdog.git']]])
