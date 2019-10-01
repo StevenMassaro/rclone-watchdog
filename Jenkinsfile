@@ -13,9 +13,9 @@ node {
       // Run the maven build
       withEnv(["MVN_HOME=$mvnHome"]) {
          if (isUnix()) {
-            sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore clean package -P ui dockerfile:build'
+            sh '"$MVN_HOME/bin/mvn" clean package -P ui dockerfile:build'
          } else {
-            bat(/"%MVN_HOME%\bin\mvn" -Dmaven.test.failure.ignore clean package -P ui dockerfile:build/)
+            bat(/"%MVN_HOME%\bin\mvn" clean package -P ui dockerfile:build/)
          }
       }
    }
