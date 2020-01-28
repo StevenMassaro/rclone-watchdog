@@ -9,12 +9,16 @@ import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.min.css';
 import {LazyLog} from "react-lazylog";
 
+// how often the log modal should reload the logs, in milliseconds
+export const LOG_RELOAD_TIMEOUT = 5000;
+
 class CommandListComponent extends Component {
 
     constructor() {
         super();
         this.state = {
-            logId: undefined
+            logId: undefined,
+            logKey: 0
         };
     }
 
@@ -101,6 +105,14 @@ class CommandListComponent extends Component {
                         <LazyLog url={"/rclone-watchdog/command/" + this.state.logId + "/log"}
                                  fetchOptions={{credentials: 'include'}}
                                  follow={true}
+                                 key={"log" + this.state.logKey}
+                                 onLoad={() => {
+                                     setTimeout(() => {
+                                         this.setState((state) => ({
+                                             logKey: state.logKey + 1
+                                         }));
+                                     }, LOG_RELOAD_TIMEOUT);
+                                 }}
                         />
                     </div>
                 </ReactModal>
