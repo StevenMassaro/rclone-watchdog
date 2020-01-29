@@ -2,6 +2,7 @@ package rcwd.service;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
@@ -95,6 +96,11 @@ public class ExecutionService {
         cmdLine.addArgument("--verbose");
         cmdLine.addArgument("--delete-before");
         cmdLine.addArgument("--delete-excluded");
+        if (StringUtils.isNotEmpty(properties.getBandwidthSchedule()) &&
+                !properties.getBandwidthSchedule().contains("$") &&
+                !properties.getBandwidthSchedule().contains("@")) {
+            cmdLine.addArgument("--bwlimit=" + properties.getBandwidthSchedule(), false);
+        }
         DefaultExecutor executor = getExecutorForCommand(command.getId(), true);
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);

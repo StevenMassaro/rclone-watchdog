@@ -24,6 +24,9 @@ public class RcwdProperties {
     @Value("${MAX_LOG_LINES}")
     private Integer maxLogLines;
 
+    @Value("${RCLONE_BANDWIDTH_SCHEDULE}")
+    private String bandwidthSchedule;
+
     public String getCurrentDirectory() {
         return currentDirectory;
     }
@@ -66,5 +69,9 @@ public class RcwdProperties {
 
     public void setMaxLogLines(Integer maxLogLines) {
         this.maxLogLines = maxLogLines;
+    }
+
+    public String getBandwidthSchedule() {
+        return bandwidthSchedule;
     }
 }
