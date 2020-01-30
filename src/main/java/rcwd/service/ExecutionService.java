@@ -96,6 +96,7 @@ public class ExecutionService {
         cmdLine.addArgument("--verbose");
         cmdLine.addArgument("--delete-before");
         cmdLine.addArgument("--delete-excluded");
+        cmdLine.addArgument("--rc");
         if (StringUtils.isNotEmpty(properties.getBandwidthSchedule()) &&
                 !properties.getBandwidthSchedule().contains("$") &&
                 !properties.getBandwidthSchedule().contains("@")) {
