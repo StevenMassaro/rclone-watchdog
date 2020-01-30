@@ -123,6 +123,18 @@ public class ExecutionService {
         System.out.println("Finish executing " + command.getId());
     }
 
+    public int setBandwidthLimit(String limit) throws Exception {
+        if (limit.length() > 4) {
+            throw new Exception("Bandwidth limit cannot be longer than 4 characters.");
+        }
+        CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath().trim());
+        cmdLine.addArgument("rc");
+        cmdLine.addArgument("core/bwlimit");
+        cmdLine.addArgument("rate=" + limit);
+        DefaultExecutor executor = new DefaultExecutor();
+        return executor.execute(cmdLine);
+    }
+
     public void kill(long commandId) {
         getExecutorForCommand(commandId, false).getWatchdog().destroyProcess();
     }
