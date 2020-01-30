@@ -1,5 +1,6 @@
 package rcwd.endpoint;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +17,7 @@ public class AdminEndpoint {
     }
 
     @PostMapping("/bandwidthLimit/{limit}")
-    public int setBandwidthLimit(String limit) throws Exception {
+    public int setBandwidthLimit(@PathVariable String limit) throws Exception {
         return executionService.setBandwidthLimit(limit);
     }
 }
