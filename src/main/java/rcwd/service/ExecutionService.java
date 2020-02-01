@@ -133,7 +133,13 @@ public class ExecutionService {
         cmdLine.addArgument("core/bwlimit");
         cmdLine.addArgument("rate=" + limit);
         DefaultExecutor executor = new DefaultExecutor();
-        return executor.execute(cmdLine);
+        int exitValue = executor.execute(cmdLine);
+        if(exitValue == 0){
+            telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s", limit));
+        } else {
+            telegramService.sendTelegramMessage(String.format("Failed to set bandwidth limit to %s, exit value %s", limit, exitValue));
+        }
+        return exitValue;
     }
 
     public void kill(long commandId) {
