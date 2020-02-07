@@ -18,7 +18,8 @@ class CommandListComponent extends Component {
         super();
         this.state = {
             logId: undefined,
-            logKey: 0
+            logKey: 0,
+            bandwidthLimit: 0
         };
     }
 
@@ -84,6 +85,17 @@ class CommandListComponent extends Component {
         });
     };
 
+    handleChange = (event) => {
+        this.setState({bandwidthLimit: event.target.value});
+    };
+
+    handleSubmit = (event) => {
+        fetch("./admin/bandwidthLimit/" + this.state.bandwidthLimit, {
+            method: 'POST'
+        });
+        event.preventDefault();
+    };
+
     render() {
         return (
             <div>
@@ -117,6 +129,17 @@ class CommandListComponent extends Component {
                     </div>
                 </ReactModal>
 
+                <form onSubmit={this.handleSubmit}>
+                    <label>
+                        Bandwidth limit:
+                        <input type="text"
+                               value={this.state.value}
+                               onChange={this.handleChange}
+                               maxLength={4}
+                        />
+                    </label>
+                    <input type="submit" value="Submit"/>
+                </form>
                 <ReactTable
                     data={this.state.commands}
                     columns={
