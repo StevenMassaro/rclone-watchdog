@@ -23,7 +23,9 @@ node {
       archiveArtifacts 'target/*.jar'
    }
    stage('Publish docker image') {
-       sh label: '', script: 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-       sh label: '', script: 'docker push stevenmassaro/rclone-watchdog:latest'
+       sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+       sh 'docker push stevenmassaro/rclone-watchdog:latest'
+       pom = readMavenPom file: 'pom.xml'
+       sh "docker push stevenmassaro/rclone-watchdog:${pom.version}"
    }
 }
