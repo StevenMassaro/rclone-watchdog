@@ -12,20 +12,20 @@ node {
       // Run the maven build
       withEnv(["MVN_HOME=$mvnHome"]) {
          if (isUnix()) {
-            sh '"$MVN_HOME/bin/mvn" clean package -P ui dockerfile:build'
+            sh '"$MVN_HOME/bin/mvn" clean package -P ui'
          } else {
-            bat(/"%MVN_HOME%\bin\mvn" clean package -P ui dockerfile:build/)
+            bat(/"%MVN_HOME%\bin\mvn" clean package -P ui/)
          }
       }
+   }
+   stage('Docker'){
+      def image = docker.build("stevenmassaro/rclone-watchdog:latest")
+      image.push()
+      pom = readMavenPom file: 'pom.xml'
+      image.push(pom.version)
    }
    stage('Results') {
       junit '**/target/surefire-reports/TEST-*.xml'
       archiveArtifacts 'target/*.jar'
-   }
-   stage('Publish docker image') {
-       sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-       sh 'docker push stevenmassaro/rclone-watchdog:latest'
-       pom = readMavenPom file: 'pom.xml'
-       sh "docker push stevenmassaro/rclone-watchdog:${pom.version}"
    }
 }
