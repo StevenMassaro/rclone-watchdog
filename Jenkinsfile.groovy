@@ -20,9 +20,11 @@ node {
    }
    stage('Docker'){
       def image = docker.build("stevenmassaro/rclone-watchdog:latest")
-      image.push()
       pom = readMavenPom file: 'pom.xml'
-      image.push(pom.version)
+      docker.withRegistry('', 'DockerHub') {
+         image.push()
+         image.push(pom.version)
+      }
    }
    stage('Results') {
       junit '**/target/surefire-reports/TEST-*.xml'
