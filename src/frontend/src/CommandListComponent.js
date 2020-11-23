@@ -19,7 +19,8 @@ class CommandListComponent extends Component {
         this.state = {
             logId: undefined,
             logKey: 0,
-            bandwidthLimit: 0
+            bandwidthLimit: 0,
+            bandwidthLimitTimeout: undefined
         };
     }
 
@@ -32,26 +33,16 @@ class CommandListComponent extends Component {
     };
 
     fetchCommands = () => {
-        this.setState({
-            fetchingCommands: true,
-            fetchedCommand: false
-        });
         fetch("./command")
             .then(this.handleRestResponse)
             .then(
                 (commands) => {
                     commands.sort(this.sortById);
                     this.setState({
-                        fetchingCommands: false,
-                        fetchedCommands: true,
                         commands: commands
                     });
                 },
                 (error) => {
-                    this.setState({
-                        fetchingCommands: false,
-                        fetchedCommands: true,
-                    });
                     error.text().then(errorMessage => toast.error(<div>Failed to retrieve commands with
                         error:<br/>{errorMessage}</div>));
                 });
@@ -85,12 +76,9 @@ class CommandListComponent extends Component {
         });
     };
 
-    handleChange = (event) => {
-        this.setState({bandwidthLimit: event.target.value});
-    };
-
     handleSubmit = (event) => {
-        fetch("./admin/bandwidthLimit/" + this.state.bandwidthLimit, {
+        fetch("./admin/bandwidthLimit/" + this.state.bandwidthLimit +
+            (this.state.bandwidthLimitTimeout ? "?secondsToWaitBeforeResettingToDefault=" + this.state.bandwidthLimitTimeout : ""), {
             method: 'POST'
         });
         event.preventDefault();
@@ -134,8 +122,17 @@ class CommandListComponent extends Component {
                         Bandwidth limit:
                         <input type="text"
                                value={this.state.value}
-                               onChange={this.handleChange}
+                               onChange={(event => {
+                                   this.setState({bandwidthLimit: event.target.value})
+                               })}
                                maxLength={4}
+                        />
+                        Bandwidth limit timeout:
+                        <input type="number"
+                               value={this.state.bandwidthLimitTimeout}
+                               onChange={(event => {
+                                   this.setState({bandwidthLimitTimeout: event.target.value})
+                               })}
                         />
                     </label>
                     <input type="submit" value="Submit"/>
