@@ -3,6 +3,8 @@ package rcwd.service;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
@@ -20,11 +22,14 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.*;
 
 import static org.apache.commons.exec.ExecuteWatchdog.INFINITE_TIMEOUT;
 
 @Service
 public class ExecutionService {
+
+    private static Logger logger = LoggerFactory.getLogger(ExecutionService.class);
 
     @Autowired
     private RcwdProperties properties;
@@ -45,6 +50,8 @@ public class ExecutionService {
     private Map<Long, DefaultExecutor> executors = new HashMap<>();
 
     private MessageHelper messageHelper;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ScheduledFuture<?> scheduledBandwidthResetJob = null;
 
     public void execute(List<Command> commands) {
         for (Command command : commands) {
@@ -124,22 +131,51 @@ public class ExecutionService {
         System.out.println("Finish executing " + command.getId());
     }
 
-    public int setBandwidthLimit(String limit) throws Exception {
+    /**
+     * @param secondsToWaitBeforeResettingToDefault if not null, the bandwidth limit will be reset back to the default value after this many seconds
+     */
+    public int setBandwidthLimit(String limit, Long secondsToWaitBeforeResettingToDefault) throws Exception {
         if (limit.length() > 4) {
             throw new Exception("Bandwidth limit cannot be longer than 4 characters.");
         }
+        int exitValue = setBandwidthLimit(limit);
+        if(exitValue == 0){
+            // also schedule a delayed job to reset the bandwidth back to default, if requested
+            if (secondsToWaitBeforeResettingToDefault != null) {
+                telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s for %s seconds", limit, secondsToWaitBeforeResettingToDefault));
+                // if there is already a scheduled job, cancel it
+                if (scheduledBandwidthResetJob != null) {
+                    scheduledBandwidthResetJob.cancel(false);
+                }
+                // and replace it with a new job
+                scheduledBandwidthResetJob = scheduler.schedule(() -> {
+                    try {
+                        String newLimit = properties.getBandwidthSchedule();
+                        telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s after waiting %s seconds", newLimit, secondsToWaitBeforeResettingToDefault));
+                        setBandwidthLimit(newLimit);
+                    } catch (Exception e) {
+                        telegramService.sendTelegramMessage(String.format("Failed to reset bandwidth limit to default of %s after waiting %s seconds.", properties.getBandwidthSchedule(), secondsToWaitBeforeResettingToDefault));
+                    }
+                }, secondsToWaitBeforeResettingToDefault, TimeUnit.SECONDS);
+            } else {
+                telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s", limit));
+            }
+        } else {
+            telegramService.sendTelegramMessage(String.format("Failed to set bandwidth limit to %s, exit value %s", limit, exitValue));
+        }
+        return exitValue;
+    }
+
+    /**
+     * Immediately set bandwidth limit to requested value.
+     */
+    private int setBandwidthLimit(String limit) throws IOException {
         CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("rc");
         cmdLine.addArgument("core/bwlimit");
         cmdLine.addArgument("rate=" + limit);
         DefaultExecutor executor = new DefaultExecutor();
-        int exitValue = executor.execute(cmdLine);
-        if(exitValue == 0){
-            telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s", limit));
-        } else {
-            telegramService.sendTelegramMessage(String.format("Failed to set bandwidth limit to %s, exit value %s", limit, exitValue));
-        }
-        return exitValue;
+        return executor.execute(cmdLine);
     }
 
     public void kill(long commandId) {

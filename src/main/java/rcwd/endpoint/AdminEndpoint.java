@@ -1,10 +1,9 @@
 package rcwd.endpoint;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rcwd.service.ExecutionService;
+
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/admin")
@@ -17,7 +16,8 @@ public class AdminEndpoint {
     }
 
     @PostMapping("/bandwidthLimit/{limit}")
-    public int setBandwidthLimit(@PathVariable String limit) throws Exception {
-        return executionService.setBandwidthLimit(limit);
+    public int setBandwidthLimit(@PathVariable String limit,
+                                 @RequestParam(required = false) final Long secondsToWaitBeforeResettingToDefault) throws Exception {
+        return executionService.setBandwidthLimit(limit, secondsToWaitBeforeResettingToDefault);
     }
 }
