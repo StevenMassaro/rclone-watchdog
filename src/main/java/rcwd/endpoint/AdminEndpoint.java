@@ -25,7 +25,7 @@ public class AdminEndpoint {
         } else if (bandwidthChangeRequest != null) {
             return executionService.setBandwidthLimit(limit, (long) bandwidthChangeRequest.getDuration(), bandwidthChangeRequest.getUnit());
         } else {
-            return -1;
+            return executionService.setBandwidthLimit(limit, null, null);
         }
     }
 }
