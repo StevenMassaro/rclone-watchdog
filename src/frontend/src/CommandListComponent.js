@@ -78,7 +78,7 @@ class CommandListComponent extends Component {
 
     handleSubmit = (event) => {
         fetch("./admin/bandwidthLimit/" + this.state.bandwidthLimit +
-            (this.state.bandwidthLimitTimeout ? "?secondsToWaitBeforeResettingToDefault=" + this.state.bandwidthLimitTimeout : ""), {
+            (this.state.bandwidthLimitTimeout ? "?minutesToWaitBeforeResettingToDefault=" + this.state.bandwidthLimitTimeout : ""), {
             method: 'POST'
         });
         event.preventDefault();
@@ -127,7 +127,7 @@ class CommandListComponent extends Component {
                                })}
                                maxLength={4}
                         />
-                        Bandwidth limit timeout:
+                        Bandwidth limit timeout (minutes):
                         <input type="number"
                                value={this.state.bandwidthLimitTimeout}
                                onChange={(event => {

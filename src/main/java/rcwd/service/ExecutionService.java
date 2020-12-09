@@ -132,17 +132,18 @@ public class ExecutionService {
     }
 
     /**
-     * @param secondsToWaitBeforeResettingToDefault if not null, the bandwidth limit will be reset back to the default value after this many seconds
+     * @param timeToWaitBeforeResettingToDefault if not null, the bandwidth limit will be reset back to the default value after this time
+     * @param unit the unit that the timeToWaitBeforeResettingToDefault param is in
      */
-    public int setBandwidthLimit(String limit, Long secondsToWaitBeforeResettingToDefault) throws Exception {
+    public int setBandwidthLimit(String limit, Long timeToWaitBeforeResettingToDefault, TimeUnit unit) throws Exception {
         if (limit.length() > 4) {
             throw new Exception("Bandwidth limit cannot be longer than 4 characters.");
         }
         int exitValue = setBandwidthLimit(limit);
         if(exitValue == 0){
             // also schedule a delayed job to reset the bandwidth back to default, if requested
-            if (secondsToWaitBeforeResettingToDefault != null) {
-                telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s for %s seconds", limit, secondsToWaitBeforeResettingToDefault));
+            if (timeToWaitBeforeResettingToDefault != null) {
+                telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s for %s %s", limit, timeToWaitBeforeResettingToDefault, unit.toString().toLowerCase()));
                 // if there is already a scheduled job, cancel it
                 if (scheduledBandwidthResetJob != null) {
                     scheduledBandwidthResetJob.cancel(false);
@@ -151,12 +152,12 @@ public class ExecutionService {
                 scheduledBandwidthResetJob = scheduler.schedule(() -> {
                     try {
                         String newLimit = properties.getBandwidthSchedule();
-                        telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s after waiting %s seconds", newLimit, secondsToWaitBeforeResettingToDefault));
+                        telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s after waiting %s %s", newLimit, timeToWaitBeforeResettingToDefault, unit.toString().toLowerCase()));
                         setBandwidthLimit(newLimit);
                     } catch (Exception e) {
-                        telegramService.sendTelegramMessage(String.format("Failed to reset bandwidth limit to default of %s after waiting %s seconds.", properties.getBandwidthSchedule(), secondsToWaitBeforeResettingToDefault));
+                        telegramService.sendTelegramMessage(String.format("Failed to reset bandwidth limit to default of %s after waiting %s %s.", properties.getBandwidthSchedule(), timeToWaitBeforeResettingToDefault, unit.toString().toLowerCase()));
                     }
-                }, secondsToWaitBeforeResettingToDefault, TimeUnit.SECONDS);
+                }, timeToWaitBeforeResettingToDefault, unit);
             } else {
                 telegramService.sendTelegramMessage(String.format("Bandwidth limit set to %s", limit));
             }
