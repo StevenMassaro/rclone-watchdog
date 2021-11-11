@@ -64,7 +64,7 @@ public class ExecutionService {
      */
     public void dryRun(Command command, OutputStream outputStream){
         statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_START, null);
-        CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
+        CommandLine cmdLine = command.getCommandLine();
         cmdLine.addArgument("--dry-run");
         System.out.println(cmdLine.toString());
         DefaultExecutor executor = new DefaultExecutor();
@@ -99,7 +99,7 @@ public class ExecutionService {
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
         CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId());
-        CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
+        CommandLine cmdLine = command.getCommandLine();
         cmdLine.addArgument("--verbose");
         cmdLine.addArgument("--delete-before");
         cmdLine.addArgument("--delete-excluded");
@@ -171,7 +171,7 @@ public class ExecutionService {
      * Immediately set bandwidth limit to requested value.
      */
     private int setBandwidthLimit(String limit) throws IOException {
-        CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath().trim());
+        CommandLine cmdLine = CommandLine.parse("rclone");
         cmdLine.addArgument("rc");
         cmdLine.addArgument("core/bwlimit");
         cmdLine.addArgument("rate=" + limit);

@@ -15,9 +15,7 @@ public class RcwdProperties {
     @Value("${SEND_TELEGRAM_MESSAGES}")
     private Boolean sendTelegramMessages;
 
-    @Value("${RCLONE_BASE_PATH}")
-    private String rcloneBasePath;
-
+    // TODO: In the process of making rclone installed in the dockerfile. Need to find a way to pass in the config file.
     @Value("${PRINT_RCLONE_TO_CONSOLE}")
     private Boolean printRcloneToConsole;
 
@@ -45,14 +43,6 @@ public class RcwdProperties {
 
     public void setSendTelegramMessages(Boolean sendTelegramMessages) {
         this.sendTelegramMessages = sendTelegramMessages;
-    }
-
-    public String getRcloneBasePath() {
-        return rcloneBasePath;
-    }
-
-    public void setRcloneBasePath(String rcloneBasePath) {
-        this.rcloneBasePath = rcloneBasePath;
     }
 
     public Boolean getPrintRcloneToConsole() {

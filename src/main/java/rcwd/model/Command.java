@@ -90,8 +90,8 @@ public class Command {
         this.statusChangeDate = statusChangeDate;
     }
 
-    public CommandLine getCommandLine(String rcloneBasePath){
-        CommandLine cmdLine = CommandLine.parse(rcloneBasePath.trim());
+    public CommandLine getCommandLine(){
+        CommandLine cmdLine = CommandLine.parse("rclone");
         addArgs(cmdLine);
         return cmdLine;
     }
