@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import rcwd.mapper.CommandMapper;
 import rcwd.model.Command;
+import rcwd.properties.RcwdProperties;
 import rcwd.service.ExecutionService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -18,11 +19,15 @@ import java.util.List;
 @RequestMapping("/command")
 public class CommandEndpoint {
 
-    @Autowired
-    private CommandMapper commandMapper;
+    private final CommandMapper commandMapper;
+    private final ExecutionService executionService;
+    private final RcwdProperties properties;
 
-    @Autowired
-    private ExecutionService executionService;
+    public CommandEndpoint(CommandMapper commandMapper, ExecutionService executionService, RcwdProperties properties) {
+        this.commandMapper = commandMapper;
+        this.executionService = executionService;
+        this.properties = properties;
+    }
 
     @GetMapping
     public List<Command> list(){
@@ -32,6 +37,12 @@ public class CommandEndpoint {
     @GetMapping("/{commandId}")
     public Command get(@PathVariable long commandId){
         return commandMapper.get(commandId);
+    }
+
+    @GetMapping("/{commandId}/print")
+    public String getHumanReadable(@PathVariable long commandId) {
+        Command command = commandMapper.get(commandId);
+        return command.getCommandLine(properties.getRcloneBasePath().trim()).toString();
     }
 
     @GetMapping("/{commandId}/execute")
