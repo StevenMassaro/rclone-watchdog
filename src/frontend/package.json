@@ -23,7 +23,7 @@
     "extends": "react-app"
   },
   "proxy": "http://localhost:8080",
-  "homepage": "/rclone-watchdog/",
+  "homepage": ".",
   "browserslist": {
     "production": [
       ">0.2%",
