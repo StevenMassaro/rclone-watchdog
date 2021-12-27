@@ -1,5 +1,6 @@
 package rcwd.service;
 
+import lombok.extern.log4j.Log4j2;
 import okhttp3.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 @Service
+@Log4j2
 public class TelegramService {
 
     @Autowired
@@ -50,11 +52,9 @@ public class TelegramService {
                 response.close();
                 return responseString;
             } catch (URISyntaxException e) {
-                System.out.println("Failed to build Telegram URI");
-                e.printStackTrace();
+                log.error("Failed to build Telegram URI", e);
             } catch (IOException e) {
-                System.out.println("Failed to call Telegram API");
-                e.printStackTrace();
+                log.error("Failed to call Telegram API", e);
             }
             return null;
         } else {

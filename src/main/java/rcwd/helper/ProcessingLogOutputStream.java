@@ -1,9 +1,11 @@
 package rcwd.helper;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.LogOutputStream;
 import rcwd.service.TelegramService;
 
+@Log4j2
 public class ProcessingLogOutputStream extends LogOutputStream {
 
     private TelegramService telegramHelper;
@@ -34,7 +36,7 @@ public class ProcessingLogOutputStream extends LogOutputStream {
         logQueue.add(line);
 
         if (printRcloneToConsole) {
-            System.out.println(line);
+            log.debug(line);
         }
     }
 }

@@ -1,10 +1,9 @@
 package rcwd.service;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
@@ -27,9 +26,8 @@ import java.util.concurrent.*;
 import static org.apache.commons.exec.ExecuteWatchdog.INFINITE_TIMEOUT;
 
 @Service
+@Log4j2
 public class ExecutionService {
-
-    private static Logger logger = LoggerFactory.getLogger(ExecutionService.class);
 
     @Autowired
     private RcwdProperties properties;
@@ -66,7 +64,7 @@ public class ExecutionService {
         statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_START, null);
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--dry-run");
-        System.out.println(cmdLine.toString());
+        log.debug(cmdLine.toString());
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
@@ -75,7 +73,7 @@ public class ExecutionService {
             executor.execute(cmdLine);
             statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_SUCCESS, null);
         } catch (IOException e) {
-            System.out.println(e.toString());
+            log.error("Exception during dry run", e);
             statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_FAIL, null);
         }
     }
@@ -87,9 +85,9 @@ public class ExecutionService {
      */
     public void execute(Command command, boolean spawnNewThread) {
         long startTime = System.nanoTime();
-        System.out.println("Begin executing " + command.getId());
+        log.debug("Begin executing " + command.getId());
         statusMapper.insert(command.getId(), StatusEnum.EXECUTION_START, null);
-        System.out.println("Executing in " + properties.getCurrentDirectory());
+        log.debug("Executing in " + properties.getCurrentDirectory());
         //verifyRcloneNotAlreadyRunning();
 
         if(messageHelper == null){
@@ -124,11 +122,11 @@ public class ExecutionService {
             }
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
-            System.out.println(e.toString());
+            log.error("Failed to run rclone job", e);
             statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
         }
 
-        System.out.println("Finish executing " + command.getId());
+        log.debug("Finish executing " + command.getId());
     }
 
     /**

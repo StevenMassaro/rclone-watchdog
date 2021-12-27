@@ -1,5 +1,6 @@
 package rcwd.helper;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.ExecuteException;
@@ -8,6 +9,7 @@ import rcwd.model.Command;
 import rcwd.model.StatusEnum;
 import rcwd.service.TelegramService;
 
+@Log4j2
 public class ProcessResultHandler extends DefaultExecuteResultHandler {
 
     private MessageHelper messageHelper;
@@ -37,7 +39,7 @@ public class ProcessResultHandler extends DefaultExecuteResultHandler {
     @Override
     public void onProcessFailed(ExecuteException e) {
         telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
-        System.out.println(e.toString());
+        log.error("Process failed", e);
         statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
         super.onProcessFailed(e);
     }
