@@ -20,7 +20,8 @@ class CommandListComponent extends Component {
             logId: undefined,
             logKey: 0,
             bandwidthLimit: 0,
-            bandwidthLimitTimeout: undefined
+            bandwidthLimitTimeout: undefined,
+            autoRefreshLog: true
         };
     }
 
@@ -101,17 +102,31 @@ class CommandListComponent extends Component {
                         "flex-direction": "column",
                         "overflow": "hidden"
                     }}>
-                        <Button onClick={() => this.showLog(null)}>Close</Button>
+                        <div style={{"width": "100%"}}>
+                            <div style={{"float": "left", "width": "50%"}}>
+                                <Button onClick={() => {
+                                    this.setState((state) => ({
+                                        autoRefreshLog: !state.autoRefreshLog,
+                                        logKey: state.autoRefreshLog ? state.logKey : state.logKey + 1
+                                    }));
+                                }}>{this.state.autoRefreshLog ? "Turn off" : "Turn on"} auto refresh</Button>
+                            </div>
+                            <div style={{"float": "right", "width": "50%", "text-align": "right"}}>
+                                <Button onClick={() => this.showLog(null)}>Close</Button>
+                            </div>
+                        </div>
                         <LazyLog url={"/rclone-watchdog/command/" + this.state.logId + "/log"}
                                  fetchOptions={{credentials: 'include'}}
                                  follow={true}
                                  key={"log" + this.state.logKey}
                                  onLoad={() => {
-                                     setTimeout(() => {
-                                         this.setState((state) => ({
-                                             logKey: state.logKey + 1
-                                         }));
-                                     }, LOG_RELOAD_TIMEOUT);
+                                     if (this.state.autoRefreshLog) {
+                                         setTimeout(() => {
+                                             this.setState((state) => ({
+                                                 logKey: state.logKey + 1
+                                             }));
+                                         }, LOG_RELOAD_TIMEOUT);
+                                     }
                                  }}
                         />
                     </div>
