@@ -66,7 +66,7 @@ public class ExecutionService {
         cmdLine.addArgument("--dry-run");
         log.debug(cmdLine.toString());
 
-        CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), 100_000);
+        CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), 100_000, true);
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(command.getName(), logQueue, properties.getPrintRcloneToConsole());
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
@@ -101,7 +101,7 @@ public class ExecutionService {
 
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
-        CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId());
+        CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), true);
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--verbose");
         cmdLine.addArgument("--delete-before");
@@ -186,13 +186,16 @@ public class ExecutionService {
         getExecutorForCommand(commandId, false).getWatchdog().destroyProcess();
     }
 
-    public CircularFifoQueue<String> getLogQueueForCommand(long commandId){
-        return getLogQueueForCommand(commandId, null);
+    public CircularFifoQueue<String> getLogQueueForCommand(long commandId, boolean clearExistingLogs){
+        return getLogQueueForCommand(commandId, null, clearExistingLogs);
     }
 
-    public CircularFifoQueue<String> getLogQueueForCommand(long commandId, Integer maxLogLines) {
+    public CircularFifoQueue<String> getLogQueueForCommand(long commandId, Integer maxLogLines, boolean clearExistingLogs) {
+        if (clearExistingLogs) {
+            logs.remove(commandId);
+        }
         CircularFifoQueue<String> queue = logs.get(commandId);
-        if(queue == null){
+        if (queue == null) {
             Integer logLines = maxLogLines == null ? properties.getMaxLogLines() : maxLogLines;
             logs.put(commandId, new CircularFifoQueue<>(logLines));
         }
