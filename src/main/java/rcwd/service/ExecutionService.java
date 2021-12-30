@@ -60,21 +60,26 @@ public class ExecutionService {
     /**
      * Perform a dry run of the execution and write the rclone output to the output stream.
      */
-    public void dryRun(Command command, OutputStream outputStream){
+    public void dryRun(Command command){
         statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_START, null);
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--dry-run");
         log.debug(cmdLine.toString());
+
+        CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), 100_000);
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(command.getName(), logQueue, properties.getPrintRcloneToConsole());
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
-        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream);
+        PumpStreamHandler streamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(streamHandler);
         try {
             executor.execute(cmdLine);
             statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_SUCCESS, null);
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramDryRunExecutionEndText(command.getName()));
         } catch (IOException e) {
             log.error("Exception during dry run", e);
             statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_FAIL, null);
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramDryRunExecutionEndText(command.getName()));
         }
     }
 
@@ -182,9 +187,14 @@ public class ExecutionService {
     }
 
     public CircularFifoQueue<String> getLogQueueForCommand(long commandId){
+        return getLogQueueForCommand(commandId, null);
+    }
+
+    public CircularFifoQueue<String> getLogQueueForCommand(long commandId, Integer maxLogLines) {
         CircularFifoQueue<String> queue = logs.get(commandId);
         if(queue == null){
-            logs.put(commandId, new CircularFifoQueue<String>(properties.getMaxLogLines()));
+            Integer logLines = maxLogLines == null ? properties.getMaxLogLines() : maxLogLines;
+            logs.put(commandId, new CircularFifoQueue<>(logLines));
         }
         return logs.get(commandId);
     }

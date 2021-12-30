@@ -51,11 +51,14 @@ class CommandListComponent extends Component {
 
     execute = (id) => {
         fetch("./command/" + id + "/execute")
+            .then(() => toast.info("Execution started"))
             .then(this.fetchCommands);
     };
 
     dryRun = (id) => {
-        fetch("./command/" + id + "/dryrun");
+        fetch("./command/" + id + "/dryrun")
+            .then(() => toast.info("Dry run started"))
+            .then(this.fetchCommands)
     };
 
     kill = (id) => {
@@ -200,7 +203,6 @@ class CommandListComponent extends Component {
                                         >Execute</Button>
                                         <Button
                                             onClick={() => this.dryRun(row.original.id)}
-                                            disabled
                                         >Dry run</Button>
                                         <Button
                                             onClick={() => this.kill(row.original.id)}

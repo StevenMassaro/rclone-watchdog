@@ -8,14 +8,14 @@ import rcwd.service.TelegramService;
 @Log4j2
 public class ProcessingLogOutputStream extends LogOutputStream {
 
-    private TelegramService telegramHelper;
-    private String task;
-    private CircularFifoQueue<String> logQueue;
-    private boolean printRcloneToConsole;
-    private MessageHelper messageHelper;
+    private final TelegramService telegramHelper;
+    private final String task;
+    private final CircularFifoQueue<String> logQueue;
+    private final boolean printRcloneToConsole;
+    private final MessageHelper messageHelper;
 
-    public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> logQueue, int logLinesToReport) {
-        this(telegramHelper, task, logQueue, logLinesToReport, false);
+    public ProcessingLogOutputStream(String task, CircularFifoQueue<String> logQueue, Boolean printRcloneToConsole) {
+        this(null, task, logQueue, 0, printRcloneToConsole);
     }
 
     public ProcessingLogOutputStream(TelegramService telegramHelper, String task, CircularFifoQueue<String> logQueue, int logLinesToReport, Boolean printRcloneToConsole) {

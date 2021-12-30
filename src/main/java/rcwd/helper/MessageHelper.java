@@ -10,7 +10,7 @@ import java.util.List;
 public class MessageHelper {
 
     private final String LINE_SEPARATOR = "\n"; // System.lineSeparator() doesn't work
-    private int logLinesToReport;
+    private final int logLinesToReport;
 
     public MessageHelper(int logLinesToReport) {
         this.logLinesToReport = logLinesToReport;
@@ -77,6 +77,10 @@ public class MessageHelper {
                 + LINE_SEPARATOR;
 
         return resultText + makeTextCode(createStringFromCircularFifoQueue(logLines));
+    }
+
+    public String buildTelegramDryRunExecutionEndText(String task) {
+        return "*Finished dry run " + task + "*";
     }
 
     private String createStringFromCircularFifoQueue(CircularFifoQueue<String> queue) {

@@ -53,10 +53,9 @@ public class CommandEndpoint {
     }
 
     @GetMapping("/{commandId}/dryrun")
-    public void dryRun(@PathVariable long commandId, HttpServletResponse response) throws IOException {
+    public void dryRun(@PathVariable long commandId) throws IOException {
         Command command = commandMapper.get(commandId);
-        executionService.dryRun(command, response.getOutputStream());
-        response.flushBuffer();
+        new Thread(() -> executionService.dryRun(command)).start();
     }
 
     @GetMapping("/{commandId}/log")
