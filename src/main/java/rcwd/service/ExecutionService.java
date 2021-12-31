@@ -4,20 +4,16 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.helper.MessageHelper;
 import rcwd.helper.ProcessResultHandler;
 import rcwd.helper.ProcessingLogOutputStream;
-import rcwd.mapper.CommandMapper;
 import rcwd.mapper.StatusMapper;
 import rcwd.model.Command;
 import rcwd.model.StatusEnum;
 import rcwd.properties.RcwdProperties;
-import rcwd.properties.TelegramProperties;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,29 +25,24 @@ import static org.apache.commons.exec.ExecuteWatchdog.INFINITE_TIMEOUT;
 @Log4j2
 public class ExecutionService {
 
-    @Autowired
-    private RcwdProperties properties;
+    private final RcwdProperties properties;
+    private final TelegramService telegramService;
+    private final StatusMapper statusMapper;
+    private final Map<Long, CircularFifoQueue<String>> logs = new HashMap<>();
+    private final Map<Long, DefaultExecutor> executors = new HashMap<>();
 
-    @Autowired
-    private TelegramProperties telegramProperties;
-    
-    @Autowired
-    private TelegramService telegramService;
-
-    @Autowired
-    private CommandMapper commandMapper;
-
-    @Autowired
-    private StatusMapper statusMapper;
-
-    private Map<Long, CircularFifoQueue<String>> logs = new HashMap<>();
-    private Map<Long, DefaultExecutor> executors = new HashMap<>();
-
-    private MessageHelper messageHelper;
+    private final MessageHelper messageHelper;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledBandwidthResetJob = null;
 
-    public void execute(List<Command> commands) {
+    public ExecutionService(RcwdProperties properties, TelegramService telegramService, StatusMapper statusMapper) {
+        this.properties = properties;
+        this.telegramService = telegramService;
+        this.statusMapper = statusMapper;
+        messageHelper = new MessageHelper(properties.getMaxTelegramLogLines());
+    }
+
+    public void execute(List<Command> commands) throws Exception {
         for (Command command : commands) {
             execute(command, false);
         }
@@ -60,11 +51,12 @@ public class ExecutionService {
     /**
      * Perform a dry run of the execution and write the rclone output to the output stream.
      */
-    public void dryRun(Command command){
+    public void dryRun(Command command) throws Exception {
         statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_START, null);
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--dry-run");
         log.debug(cmdLine.toString());
+        verifyRcloneNotAlreadyRunning(command);
 
         CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), 100_000, true);
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(command.getName(), logQueue, properties.getPrintRcloneToConsole());
@@ -73,9 +65,8 @@ public class ExecutionService {
         PumpStreamHandler streamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(streamHandler);
         try {
-            executor.execute(cmdLine);
-            statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_SUCCESS, null);
-            telegramService.sendTelegramMessage(messageHelper.buildTelegramDryRunExecutionEndText(command.getName()));
+            ProcessResultHandler resultHandler = new ProcessResultHandler(messageHelper, telegramService, statusMapper, command, logQueue, null, true);
+            executor.execute(cmdLine, resultHandler);
         } catch (IOException e) {
             log.error("Exception during dry run", e);
             statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_FAIL, null);
@@ -88,16 +79,12 @@ public class ExecutionService {
      *                       executing the command in the background. if false, this will execute in the current
      *                       thread and this method will only return once the execution finishes
      */
-    public void execute(Command command, boolean spawnNewThread) {
+    public void execute(Command command, boolean spawnNewThread) throws Exception {
         long startTime = System.nanoTime();
         log.debug("Begin executing " + command.getId());
         statusMapper.insert(command.getId(), StatusEnum.EXECUTION_START, null);
         log.debug("Executing in " + properties.getCurrentDirectory());
-        //verifyRcloneNotAlreadyRunning();
-
-        if(messageHelper == null){
-            messageHelper = new MessageHelper(properties.getMaxTelegramLogLines());
-        }
+        verifyRcloneNotAlreadyRunning(command);
 
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
@@ -118,7 +105,7 @@ public class ExecutionService {
         executor.setStreamHandler(pumpStreamHandler);
         try {
             if (spawnNewThread) {
-                ProcessResultHandler resultHandler = new ProcessResultHandler(messageHelper, telegramService, statusMapper, command, logQueue, startTime);
+                ProcessResultHandler resultHandler = new ProcessResultHandler(messageHelper, telegramService, statusMapper, command, logQueue, startTime, false);
                 executor.execute(cmdLine, resultHandler);
             } else {
                 executor.execute(cmdLine);
@@ -218,20 +205,12 @@ public class ExecutionService {
         return executors.get(commandId);
     }
 
-    // TODO this needs to be de-windowsafied
-    /*
-    private void verifyRcloneNotAlreadyRunning() throws Exception {
-        if (Boolean.TRUE.equals(properties.getPerformMultipleRcloneExecutionCheck())) {
-            Runtime rt = Runtime.getRuntime();
-            Process p = rt.exec("tasklist.exe");
-            String executions = IOUtils.toString(p.getInputStream(), StandardCharsets.UTF_8);
-
-            if (StringUtils.countMatches(executions, "rclone.exe") > properties.getConcurrentRcloneExecutionLimit()) {
-                throw new Exception(properties.getConcurrentRcloneExecutionLimit() + " concurrent " +
-                        " " + (properties.getConcurrentRcloneExecutionLimit() > 1 ? "instances" : "instance") + " of rclone.exe allowed to be running.");
-            }
+    private void verifyRcloneNotAlreadyRunning(Command command) throws Exception {
+        if (StatusEnum.EXECUTION_START.getName().equals(command.getStatus())) {
+            throw new Exception("This command is already being executed");
+        }
+        if (StatusEnum.DRY_RUN_EXECUTION_START.getName().equals(command.getStatus())) {
+            throw new Exception("This command is already being executed in dry run");
         }
     }
-    */
-
 }

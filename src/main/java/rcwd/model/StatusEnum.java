@@ -1,5 +1,8 @@
 package rcwd.model;
 
+import lombok.Getter;
+
+@Getter
 public enum StatusEnum {
     EXECUTION_START(0, "Execution started"),
     EXECUTION_FAIL(1, "Execution failed"),

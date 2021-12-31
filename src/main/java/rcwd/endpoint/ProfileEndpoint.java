@@ -32,7 +32,7 @@ public class ProfileEndpoint {
     }
 
     @GetMapping("/{profileId}/executeAndWait")
-    public String executeByProfileId(@PathVariable long profileId) {
+    public String executeByProfileId(@PathVariable long profileId) throws Exception {
         Profile profile = profileMapper.get(profileId);
         executionService.execute(profile.getCommands());
         return Long.toString(profile.getId());

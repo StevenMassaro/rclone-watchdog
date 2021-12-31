@@ -12,35 +12,47 @@ import rcwd.service.TelegramService;
 @Log4j2
 public class ProcessResultHandler extends DefaultExecuteResultHandler {
 
-    private MessageHelper messageHelper;
-    private TelegramService telegramService;
-    private StatusMapper statusMapper;
+    private final MessageHelper messageHelper;
+    private final TelegramService telegramService;
+    private final StatusMapper statusMapper;
 
-    private Command command;
-    private CircularFifoQueue<String> logQueue;
-    private long startTime;
+    private final Command command;
+    private final CircularFifoQueue<String> logQueue;
+    private final Long startTime;
+    private final boolean isDryRun;
 
-    public ProcessResultHandler(MessageHelper messageHelper, TelegramService telegramService, StatusMapper statusMapper, Command command, CircularFifoQueue<String> logQueue, long startTime) {
+    public ProcessResultHandler(MessageHelper messageHelper, TelegramService telegramService, StatusMapper statusMapper, Command command, CircularFifoQueue<String> logQueue, Long startTime, boolean isDryRun) {
         this.messageHelper = messageHelper;
         this.telegramService = telegramService;
         this.statusMapper = statusMapper;
         this.command = command;
         this.logQueue = logQueue;
         this.startTime = startTime;
+        this.isDryRun = isDryRun;
     }
 
     @Override
     public void onProcessComplete(int exitValue) {
-        telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
-        statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
+        if (isDryRun) {
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramDryRunExecutionEndText(command.getName()));
+            statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_SUCCESS, null);
+        } else {
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
+            statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
+        }
         super.onProcessComplete(exitValue);
     }
 
     @Override
     public void onProcessFailed(ExecuteException e) {
-        telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
         log.error("Process failed", e);
-        statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
+        if (isDryRun) {
+            telegramService.sendTelegramMessage(messageHelper.buildTelegramDryRunExecutionEndText(command.getName()));
+            statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_FAIL, null);
+        } else {
+            telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
+            statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
+        }
         super.onProcessFailed(e);
     }
 }

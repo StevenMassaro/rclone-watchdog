@@ -47,16 +47,16 @@ public class CommandEndpoint {
     }
 
     @GetMapping("/{commandId}/execute")
-    public String execute(@PathVariable long commandId){
+    public String execute(@PathVariable long commandId) throws Exception {
         Command command = commandMapper.get(commandId);
         executionService.execute(command, true);
         return Long.toString(command.getId());
     }
 
     @GetMapping("/{commandId}/dryrun")
-    public void dryRun(@PathVariable long commandId) throws IOException {
+    public void dryRun(@PathVariable long commandId) throws Exception {
         Command command = commandMapper.get(commandId);
-        new Thread(() -> executionService.dryRun(command)).start();
+        executionService.dryRun(command);
     }
 
     @GetMapping("/{commandId}/log")

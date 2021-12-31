@@ -57,7 +57,15 @@ class CommandListComponent extends Component {
 
     dryRun = (id) => {
         fetch("./command/" + id + "/dryrun")
-            .then(() => toast.info("Dry run started"))
+            .then((res) => {
+                if (res.ok) {
+                    toast.info("Dry run started");
+                } else {
+                    let text = res.json().then(json => {
+                        toast.error("Dry run failed: " + json.message);
+                    })
+                }
+            })
             .then(this.fetchCommands)
     };
 
