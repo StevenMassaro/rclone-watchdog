@@ -125,9 +125,11 @@ class CommandListComponent extends Component {
                                  onLoad={() => {
                                      if (this.state.autoRefreshLog) {
                                          setTimeout(() => {
-                                             this.setState((state) => ({
-                                                 logKey: state.logKey + 1
-                                             }));
+                                             if (this.state.autoRefreshLog) {
+                                                 this.setState((state) => ({
+                                                     logKey: state.logKey + 1
+                                                 }));
+                                             }
                                          }, LOG_RELOAD_TIMEOUT);
                                      }
                                  }}
