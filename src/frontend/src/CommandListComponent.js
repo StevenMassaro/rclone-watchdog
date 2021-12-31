@@ -122,6 +122,7 @@ class CommandListComponent extends Component {
                                  fetchOptions={{credentials: 'include'}}
                                  follow={true}
                                  key={"log" + this.state.logKey}
+                                 extraLines={1}
                                  onLoad={() => {
                                      if (this.state.autoRefreshLog) {
                                          setTimeout(() => {

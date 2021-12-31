@@ -62,7 +62,7 @@ public class CommandEndpoint {
     @GetMapping("/{commandId}/log")
     public String getLog(@PathVariable long commandId){
         CircularFifoQueue<String> logs = executionService.getLogQueueForCommand(commandId, false);
-        return StringUtils.join(logs, "\n");
+        return StringUtils.join(logs, "\n") + "\n";
     }
 
     @GetMapping("/{commandId}/kill")
