@@ -5,6 +5,7 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.SocketUtils;
 import rcwd.helper.MessageHelper;
 import rcwd.helper.ProcessResultHandler;
 import rcwd.helper.ProcessingLogOutputStream;
@@ -30,6 +31,12 @@ public class ExecutionService {
     private final StatusMapper statusMapper;
     private final Map<Long, CircularFifoQueue<String>> logs = new HashMap<>();
     private final Map<Long, DefaultExecutor> executors = new HashMap<>();
+    /**
+     * A map, where each key is the command ID, and the value is the port number that rc is running on for that
+     * command. When execution finishes (with success or error) the value for that command should be removed
+     * from this map.
+     */
+    public static final Map<Long, Integer> rcPorts = new HashMap<>();
 
     private final MessageHelper messageHelper;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -100,6 +107,9 @@ public class ExecutionService {
         cmdLine.addArgument("--delete-before");
         cmdLine.addArgument("--delete-excluded");
         cmdLine.addArgument("--rc");
+        int availableTcpPort = SocketUtils.findAvailableTcpPort();
+        rcPorts.put(command.getId(), availableTcpPort);
+        cmdLine.addArgument("--rc-addr=localhost:" + availableTcpPort);
         if (StringUtils.isNotEmpty(properties.getBandwidthSchedule()) &&
                 !properties.getBandwidthSchedule().contains("$") &&
                 !properties.getBandwidthSchedule().contains("@")) {
@@ -117,6 +127,7 @@ public class ExecutionService {
                 executor.execute(cmdLine);
                 telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
                 statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
+                rcPorts.remove(command.getId());
             }
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
@@ -167,12 +178,17 @@ public class ExecutionService {
      * Immediately set bandwidth limit to requested value.
      */
     private int setBandwidthLimit(String limit) throws IOException {
-        CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath().trim());
-        cmdLine.addArgument("rc");
-        cmdLine.addArgument("core/bwlimit");
-        cmdLine.addArgument("rate=" + limit);
-        DefaultExecutor executor = new DefaultExecutor();
-        return executor.execute(cmdLine);
+        int exitValues = 0;
+        for (Map.Entry<Long, Integer> rcPort : rcPorts.entrySet()) {
+            CommandLine cmdLine = CommandLine.parse(properties.getRcloneBasePath().trim());
+            cmdLine.addArgument("rc");
+            cmdLine.addArgument("core/bwlimit");
+            cmdLine.addArgument("rate=" + limit);
+            cmdLine.addArgument("--rc-addr=localhost:" + rcPort.getValue());
+            DefaultExecutor executor = new DefaultExecutor();
+            exitValues += executor.execute(cmdLine);
+        }
+        return exitValues;
     }
 
     public void kill(long commandId) {

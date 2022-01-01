@@ -7,6 +7,7 @@ import org.apache.commons.exec.ExecuteException;
 import rcwd.mapper.StatusMapper;
 import rcwd.model.Command;
 import rcwd.model.StatusEnum;
+import rcwd.service.ExecutionService;
 import rcwd.service.TelegramService;
 
 @Log4j2
@@ -40,6 +41,7 @@ public class ProcessResultHandler extends DefaultExecuteResultHandler {
             telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
             statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
         }
+        ExecutionService.rcPorts.remove(command.getId());
         super.onProcessComplete(exitValue);
     }
 
@@ -53,6 +55,7 @@ public class ProcessResultHandler extends DefaultExecuteResultHandler {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
         }
+        ExecutionService.rcPorts.remove(command.getId());
         super.onProcessFailed(e);
     }
 }
