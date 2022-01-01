@@ -7,10 +7,8 @@ import 'semantic-ui-css/semantic.min.css';
 import {Button, Container, Dropdown, Grid, Image} from 'semantic-ui-react';
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.min.css';
-import {LazyLog} from "react-lazylog";
-
-// how often the log modal should reload the logs, in milliseconds
-export const LOG_RELOAD_TIMEOUT = 5000;
+import LogViewerComponent from "./LogViewerComponent";
+import {handleRestResponse} from "./Utils";
 
 class CommandListComponent extends Component {
 
@@ -35,7 +33,7 @@ class CommandListComponent extends Component {
 
     fetchCommands = () => {
         fetch("./command")
-            .then(this.handleRestResponse)
+            .then(handleRestResponse)
             .then(
                 (commands) => {
                     commands.sort(this.sortById);
@@ -84,14 +82,6 @@ class CommandListComponent extends Component {
             .then(this.fetchCommands);
     };
 
-    handleRestResponse = (res) => {
-        if (res.ok) {
-            return res.json();
-        } else {
-            throw res;
-        }
-    };
-
     showLog = (id) => {
         this.setState({
             logId: id
@@ -116,45 +106,10 @@ class CommandListComponent extends Component {
                     contentLabel={"Log"}
                     ariaHideApp={false}
                 >
-                    <div className={"modalContentWrapper"} style={{
-                        "display": "flex",
-                        "width": "100%",
-                        "height": "100%",
-                        "flex-direction": "column",
-                        "overflow": "hidden"
-                    }}>
-                        <div style={{"width": "100%"}}>
-                            <div style={{"float": "left", "width": "50%"}}>
-                                <Button onClick={() => {
-                                    this.setState((state) => ({
-                                        autoRefreshLog: !state.autoRefreshLog,
-                                        logKey: state.autoRefreshLog ? state.logKey : state.logKey + 1
-                                    }));
-                                }}>{this.state.autoRefreshLog ? "Turn off" : "Turn on"} auto refresh</Button>
-                            </div>
-                            <div style={{"float": "right", "width": "50%", "text-align": "right"}}>
-                                <Button onClick={() => this.showLog(null)}>Close</Button>
-                            </div>
-                        </div>
-                        <LazyLog url={"./command/" + this.state.logId + "/log"}
-                                 fetchOptions={{credentials: 'include'}}
-                                 follow={true}
-                                 key={"log" + this.state.logKey}
-                                 extraLines={1}
-                                 selectableLines={true}
-                                 onLoad={() => {
-                                     if (this.state.autoRefreshLog) {
-                                         setTimeout(() => {
-                                             if (this.state.autoRefreshLog) {
-                                                 this.setState((state) => ({
-                                                     logKey: state.logKey + 1
-                                                 }));
-                                             }
-                                         }, LOG_RELOAD_TIMEOUT);
-                                     }
-                                 }}
-                        />
-                    </div>
+                    <LogViewerComponent
+                        showLog={this.showLog}
+                        commandId={this.state.logId}
+                    />
                 </ReactModal>
 
                 <form onSubmit={this.handleSubmit}>

@@ -1,16 +1,12 @@
 package rcwd.endpoint;
 
-import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import rcwd.mapper.CommandMapper;
 import rcwd.model.Command;
 import rcwd.properties.RcwdProperties;
 import rcwd.service.ExecutionService;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -57,9 +53,8 @@ public class CommandEndpoint {
     }
 
     @GetMapping("/{commandId}/log")
-    public String getLog(@PathVariable long commandId){
-        CircularFifoQueue<String> logs = executionService.getLogQueueForCommand(commandId, false);
-        return StringUtils.join(logs, "\n") + "\n";
+    public List<String> getLog(@PathVariable long commandId){
+        return new ArrayList<>(executionService.getLogQueueForCommand(commandId, false));
     }
 
     @GetMapping("/{commandId}/kill")
