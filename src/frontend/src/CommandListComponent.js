@@ -141,6 +141,7 @@ class CommandListComponent extends Component {
                                  follow={true}
                                  key={"log" + this.state.logKey}
                                  extraLines={1}
+                                 selectableLines={true}
                                  onLoad={() => {
                                      if (this.state.autoRefreshLog) {
                                          setTimeout(() => {
