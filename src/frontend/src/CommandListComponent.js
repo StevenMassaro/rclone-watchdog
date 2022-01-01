@@ -198,7 +198,7 @@ class CommandListComponent extends Component {
                                 Header: "Last status",
                                 id: "status",
                                 maxWidth: 175,
-                                accessor: s => (s.statusChangeDate && s.status) ? (<span>{s.statusChangeDate}<br/>{s.status}</span>) : ""
+                                accessor: s => (s.statusChangeDate && s.status) ? (<span style={{color: s.status.includes("failed") ? "red" : (s.status.includes("success") ? "green" : "orange")}}>{s.statusChangeDate}<br/>{s.status}</span>) : ""
                             },
                             {
                                 Header: "Actions",
