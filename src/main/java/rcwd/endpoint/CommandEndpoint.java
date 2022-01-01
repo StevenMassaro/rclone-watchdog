@@ -3,10 +3,7 @@ package rcwd.endpoint;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rcwd.mapper.CommandMapper;
 import rcwd.model.Command;
 import rcwd.properties.RcwdProperties;
@@ -47,16 +44,16 @@ public class CommandEndpoint {
     }
 
     @GetMapping("/{commandId}/execute")
-    public String execute(@PathVariable long commandId) throws Exception {
+    public String execute(@PathVariable long commandId, @RequestParam(required = false, defaultValue = "false") boolean force) throws Exception {
         Command command = commandMapper.get(commandId);
-        executionService.execute(command, true);
+        executionService.execute(command, true, force);
         return Long.toString(command.getId());
     }
 
     @GetMapping("/{commandId}/dryrun")
-    public void dryRun(@PathVariable long commandId) throws Exception {
+    public void dryRun(@PathVariable long commandId, @RequestParam(required = false, defaultValue = "false") boolean force) throws Exception {
         Command command = commandMapper.get(commandId);
-        executionService.dryRun(command);
+        executionService.dryRun(command, force);
     }
 
     @GetMapping("/{commandId}/log")

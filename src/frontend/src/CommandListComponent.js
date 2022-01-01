@@ -49,24 +49,32 @@ class CommandListComponent extends Component {
                 });
     };
 
-    execute = (id) => {
-        fetch("./command/" + id + "/execute")
-            .then((res) => this.handleExecutionResponse(res, "Execution"))
+    execute = (id, force = false) => {
+        fetch("./command/" + id + "/execute?force=" + force)
+            .then((res) => this.handleExecutionResponse(id, res, "Execution", this.execute))
             .then(this.fetchCommands);
     };
 
-    dryRun = (id) => {
-        fetch("./command/" + id + "/dryrun")
-            .then((res) => this.handleExecutionResponse(res, "Dry run"))
+    dryRun = (id, force = false) => {
+        fetch("./command/" + id + "/dryrun?force=" + force)
+            .then((res) => this.handleExecutionResponse(id, res, "Dry run", this.dryRun))
             .then(this.fetchCommands)
     };
 
-    handleExecutionResponse = (res, messagePrefix) => {
+    /**
+     *
+     * @param res the raw response from the fetch command
+     * @param messagePrefix the prefix that should be appended to the toast messages to indicate what kind of execution
+     * this was (dry run or a real one)
+     * @param forceRerunCallback a callback that will be invoked if the user forces execution
+     */
+    handleExecutionResponse = (commandId, res, messagePrefix, forceRerunCallback) => {
         if (res.ok) {
             toast.info(messagePrefix + " started");
         } else {
             let text = res.json().then(json => {
-                toast.error(messagePrefix + " failed: " + json.message);
+                toast.error(<span>{messagePrefix} failed: {json.message}<br/>
+                <a href="#" onClick={() => forceRerunCallback(commandId, true)}>Force execution?</a></span>);
             })
         }
     }

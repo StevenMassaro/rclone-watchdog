@@ -44,19 +44,22 @@ public class ExecutionService {
 
     public void execute(List<Command> commands) throws Exception {
         for (Command command : commands) {
-            execute(command, false);
+            execute(command, false, false);
         }
     }
 
     /**
      * Perform a dry run of the execution and write the rclone output to the output stream.
+     * @param force if true, will not check to make sure that rclone is not already running
      */
-    public void dryRun(Command command) throws Exception {
+    public void dryRun(Command command, boolean force) throws Exception {
         statusMapper.insert(command.getId(), StatusEnum.DRY_RUN_EXECUTION_START, null);
         CommandLine cmdLine = command.getCommandLine(properties.getRcloneBasePath().trim());
         cmdLine.addArgument("--dry-run");
         log.debug(cmdLine.toString());
-        verifyRcloneNotAlreadyRunning(command);
+        if (!force) {
+            verifyRcloneNotAlreadyRunning(command);
+        }
 
         CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), 100_000, true);
         ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(command.getName(), logQueue, properties.getPrintRcloneToConsole());
@@ -78,13 +81,16 @@ public class ExecutionService {
      * @param spawnNewThread if true, a new thread will be spawned and this method will return immediately,
      *                       executing the command in the background. if false, this will execute in the current
      *                       thread and this method will only return once the execution finishes
+     * @param force if true, will not check to make sure that rclone is not already running
      */
-    public void execute(Command command, boolean spawnNewThread) throws Exception {
+    public void execute(Command command, boolean spawnNewThread, boolean force) throws Exception {
         long startTime = System.nanoTime();
         log.debug("Begin executing " + command.getId());
         statusMapper.insert(command.getId(), StatusEnum.EXECUTION_START, null);
         log.debug("Executing in " + properties.getCurrentDirectory());
-        verifyRcloneNotAlreadyRunning(command);
+        if (!force) {
+            verifyRcloneNotAlreadyRunning(command);
+        }
 
         telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionStartText(command.getName()));
 
