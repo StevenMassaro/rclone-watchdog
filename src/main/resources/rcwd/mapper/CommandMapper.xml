@@ -6,6 +6,7 @@
 
     <select id="list" resultMap="commandMap">
         <include refid="selectSql"/>
+        WHERE c.hidden = false
         ORDER BY c.id, f.id
     </select>
 
