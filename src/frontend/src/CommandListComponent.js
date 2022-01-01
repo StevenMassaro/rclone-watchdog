@@ -51,23 +51,25 @@ class CommandListComponent extends Component {
 
     execute = (id) => {
         fetch("./command/" + id + "/execute")
-            .then(() => toast.info("Execution started"))
+            .then((res) => this.handleExecutionResponse(res, "Execution"))
             .then(this.fetchCommands);
     };
 
     dryRun = (id) => {
         fetch("./command/" + id + "/dryrun")
-            .then((res) => {
-                if (res.ok) {
-                    toast.info("Dry run started");
-                } else {
-                    let text = res.json().then(json => {
-                        toast.error("Dry run failed: " + json.message);
-                    })
-                }
-            })
+            .then((res) => this.handleExecutionResponse(res, "Dry run"))
             .then(this.fetchCommands)
     };
+
+    handleExecutionResponse = (res, messagePrefix) => {
+        if (res.ok) {
+            toast.info(messagePrefix + " started");
+        } else {
+            let text = res.json().then(json => {
+                toast.error(messagePrefix + " failed: " + json.message);
+            })
+        }
+    }
 
     kill = (id) => {
         fetch("./command/" + id + "/kill")
