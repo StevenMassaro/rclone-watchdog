@@ -34,22 +34,24 @@ class LogViewerComponent extends Component<props, state> {
     }
 
     fetchLogs = () => {
-        fetch("./command/" + this.props.commandId + "/log")
-            .then(handleRestResponse)
-            .then(
-                (logs) => {
-                    this.setState({
-                        logs
-                    });
-                    if (this.state.autoRefreshLog) {
-                        setTimeout(() => {
-                            if (this.state.autoRefreshLog) {
-                                this.fetchLogs();
-                            }
-                        }, LOG_RELOAD_TIMEOUT);
+        if (this.props.commandId) {
+            fetch("./command/" + this.props.commandId + "/log")
+                .then(handleRestResponse)
+                .then(
+                    (logs) => {
+                        this.setState({
+                            logs
+                        });
+                        if (this.state.autoRefreshLog) {
+                            setTimeout(() => {
+                                if (this.state.autoRefreshLog) {
+                                    this.fetchLogs();
+                                }
+                            }, LOG_RELOAD_TIMEOUT);
+                        }
                     }
-                }
-            )
+                )
+        }
     }
 
     toggleWrapText= () => {
