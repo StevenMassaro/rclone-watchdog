@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { LogViewer, LogViewerSearch } from '@patternfly/react-log-viewer';
 import "@patternfly/react-core/dist/styles/base-no-reset.css";
+import "./LogViewerComponent.css";
 import { Toolbar, ToolbarContent, ToolbarItem, Button, Checkbox } from '@patternfly/react-core';
 import {handleRestResponse} from "./Utils";
 
