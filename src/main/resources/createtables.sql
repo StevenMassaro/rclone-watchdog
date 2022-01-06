@@ -62,12 +62,12 @@ create table rclonewatchdog.status(
   modifieddate timestamp default now()
 );
 
-insert into rclonewatchdog.statustype (statustype, name) values (0, 'Execution started');
-insert into rclonewatchdog.statustype (statustype, name) values (1, 'Execution failed');
-insert into rclonewatchdog.statustype (statustype, name) values (2, 'Execution success');
-insert into rclonewatchdog.statustype (statustype, name) values (3, 'Dry run execution started');
-insert into rclonewatchdog.statustype (statustype, name) values (4, 'Dry run execution failed');
-insert into rclonewatchdog.statustype (statustype, name) values (5, 'Dry run execution success');
+insert into rclonewatchdog.statustype (statustype, name) values (0, 'EXECUTION_START');
+insert into rclonewatchdog.statustype (statustype, name) values (1, 'EXECUTION_FAIL');
+insert into rclonewatchdog.statustype (statustype, name) values (2, 'EXECUTION_SUCCESS');
+insert into rclonewatchdog.statustype (statustype, name) values (3, 'DRY_RUN_EXECUTION_START');
+insert into rclonewatchdog.statustype (statustype, name) values (4, 'DRY_RUN_EXECUTION_FAIL');
+insert into rclonewatchdog.statustype (statustype, name) values (5, 'DRY_RUN_EXECUTION_SUCCESS');
 
 CREATE VIEW rclonewatchdog.commands AS
 select

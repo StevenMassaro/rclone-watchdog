@@ -45,7 +45,7 @@ public class CommandMapperIT {
 
         list = commandMapper.list();
         assertEquals(1, list.size());
-        assertNotNull(list.get(0).getStatus());
+        assertEquals(StatusEnum.DRY_RUN_EXECUTION_START, list.get(0).getStatus());
         assertNotNull(list.get(0).getStatusChangeDate());
     }
 

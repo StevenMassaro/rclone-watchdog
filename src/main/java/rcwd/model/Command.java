@@ -21,7 +21,7 @@ public class Command {
     private Directory source;
     private Destination destination;
     private List<Filter> filters;
-    private String status;
+    private StatusEnum status;
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss a", timezone = "America/New_York")
     private Date statusChangeDate;
 
