@@ -69,7 +69,7 @@ public class ExecutionService {
         }
 
         CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), 100_000, true);
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(command.getName(), logQueue, properties.getPrintRcloneToConsole());
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(this, command, logQueue, properties.getPrintRcloneToConsole());
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         PumpStreamHandler streamHandler = new PumpStreamHandler(logOutputStream);
@@ -116,7 +116,7 @@ public class ExecutionService {
             cmdLine.addArgument("--bwlimit=" + properties.getBandwidthSchedule(), false);
         }
         DefaultExecutor executor = getExecutorForCommand(command.getId(), true);
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(telegramService, command.getName(), logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(this, telegramService, command, logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
