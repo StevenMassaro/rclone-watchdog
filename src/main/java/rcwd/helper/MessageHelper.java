@@ -1,6 +1,7 @@
 package rcwd.helper;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import rcwd.FailedJobStartupUpdater;
 
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -71,12 +72,18 @@ public class MessageHelper {
     /**
      * Build the message indicating the result of execution.
      */
-    public String buildTelegramExecutionEndText(String task, long startTime, long endTime, CircularFifoQueue<String> logLines) {
-        String resultText = "*Finished " + task + "*"
-                + LINE_SEPARATOR + "Execution time: " + TimeHelper.elapsedTimeToHumanString(startTime, endTime)
+    public String buildTelegramExecutionEndText(String task, Long startTime, Long endTime, CircularFifoQueue<String> logLines) {
+        String resultText = "*Finished " + task + "*" +
+                (startTime != null && endTime != null ? LINE_SEPARATOR + "Execution time: " + TimeHelper.elapsedTimeToHumanString(startTime, endTime) : "")
                 + LINE_SEPARATOR;
 
         return resultText + makeTextCode(createStringFromCircularFifoQueue(logLines));
+    }
+
+    public String buildTelegramExecutionFailedOnStartupText(String task) {
+        return "*Finished " + task + "*"
+                + LINE_SEPARATOR
+                + FailedJobStartupUpdater.failureMessage;
     }
 
     public String buildTelegramDryRunExecutionEndText(String task) {
@@ -85,15 +92,17 @@ public class MessageHelper {
 
     private String createStringFromCircularFifoQueue(CircularFifoQueue<String> queue) {
         StringBuilder logLineText = new StringBuilder();
-        if (queue.size() > logLinesToReport) {
-            for (int line = (queue.size() - logLinesToReport); line < queue.size(); line++) {
-                logLineText.append(queue.get(line));
-                logLineText.append(LINE_SEPARATOR);
-            }
-        } else {
-            for (String line : queue) {
-                logLineText.append(line);
-                logLineText.append(LINE_SEPARATOR);
+        if (queue != null) {
+            if (queue.size() > logLinesToReport) {
+                for (int line = (queue.size() - logLinesToReport); line < queue.size(); line++) {
+                    logLineText.append(queue.get(line));
+                    logLineText.append(LINE_SEPARATOR);
+                }
+            } else {
+                for (String line : queue) {
+                    logLineText.append(line);
+                    logLineText.append(LINE_SEPARATOR);
+                }
             }
         }
 
@@ -101,6 +110,6 @@ public class MessageHelper {
     }
 
     private String makeTextCode(String text) {
-        return "```" + LINE_SEPARATOR + text + LINE_SEPARATOR + "```";
+        return text == null ? "" : "```" + LINE_SEPARATOR + text + LINE_SEPARATOR + "```";
     }
 }

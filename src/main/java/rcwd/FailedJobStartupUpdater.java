@@ -1,11 +1,14 @@
 package rcwd;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.springframework.stereotype.Component;
+import rcwd.helper.MessageHelper;
 import rcwd.mapper.CommandMapper;
 import rcwd.mapper.StatusMapper;
 import rcwd.model.Command;
 import rcwd.model.StatusEnum;
+import rcwd.service.TelegramService;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
@@ -21,10 +24,13 @@ public class FailedJobStartupUpdater {
 
     private final CommandMapper commandMapper;
     private final StatusMapper statusMapper;
+    private final TelegramService telegramService;
+    public static final String failureMessage = "Automatically marking in progress job as failed on startup";
 
-    public FailedJobStartupUpdater(CommandMapper commandMapper, StatusMapper statusMapper) {
+    public FailedJobStartupUpdater(CommandMapper commandMapper, StatusMapper statusMapper, TelegramService telegramService) {
         this.commandMapper = commandMapper;
         this.statusMapper = statusMapper;
+        this.telegramService = telegramService;
     }
 
     @PostConstruct
@@ -33,9 +39,11 @@ public class FailedJobStartupUpdater {
         if (commands != null) {
             for (Command command : commands) {
                 if (StatusEnum.DRY_RUN_EXECUTION_START.equals(command.getStatus()) || StatusEnum.EXECUTION_START.equals(command.getStatus())) {
+                    MessageHelper  messageHelper = new MessageHelper(0);
                     log.warn("Marking command {} as failed", command.getId());
                     StatusEnum newStatus = StatusEnum.DRY_RUN_EXECUTION_START.equals(command.getStatus()) ? StatusEnum.DRY_RUN_EXECUTION_FAIL : StatusEnum.EXECUTION_FAIL;
-                    statusMapper.insert(command.getId(), newStatus, "Automatically marking failed on startup");
+                    statusMapper.insert(command.getId(), newStatus, failureMessage);
+                    telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionFailedOnStartupText(command.getName()));
                 }
             }
         }
