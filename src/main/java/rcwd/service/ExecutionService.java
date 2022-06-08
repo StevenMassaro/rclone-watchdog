@@ -141,8 +141,12 @@ public class ExecutionService {
     /**
      * @param timeToWaitBeforeResettingToDefault if not null, the bandwidth limit will be reset back to the default value after this time
      * @param unit the unit that the timeToWaitBeforeResettingToDefault param is in
+     * @return the exit code from setting the bandwidth limit, or -1 if nothing is currently running
      */
     public int setBandwidthLimit(String limit, Long timeToWaitBeforeResettingToDefault, TimeUnit unit) throws Exception {
+        if (rcPorts.isEmpty()) {
+            return -1;
+        }
         if (limit.length() > 4) {
             throw new Exception("Bandwidth limit cannot be longer than 4 characters.");
         }
