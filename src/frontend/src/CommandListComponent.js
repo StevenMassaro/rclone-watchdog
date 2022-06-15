@@ -4,7 +4,7 @@ import ReactTable from "react-table";
 import ReactModal from "react-modal";
 import "react-table/react-table.css";
 import 'semantic-ui-css/semantic.min.css';
-import {Button, Container, Dropdown, Grid, Image} from 'semantic-ui-react';
+import {Button} from 'semantic-ui-react';
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.min.css';
 import LogViewerComponent from "./LogViewerComponent";
@@ -70,9 +70,9 @@ class CommandListComponent extends Component {
         if (res.ok) {
             toast.info(messagePrefix + " started");
         } else {
-            let text = res.json().then(json => {
+            res.json().then(json => {
                 toast.error(<span>{messagePrefix} failed: {json.message}<br/>
-                <a href="#" onClick={() => forceRerunCallback(commandId, true)}>Force execution?</a></span>);
+                <button onClick={() => forceRerunCallback(commandId, true)}>Force execution?</button></span>);
             })
         }
     }
