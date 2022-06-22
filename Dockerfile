@@ -10,4 +10,5 @@ RUN apk update && apk --no-cache add ca-certificates && \
     cd .. && \
     rm -rf rclone-current-linux-amd64.zip rclone-*-linux-amd64
 ADD /target/rclone-watchdog.jar rclone-watchdog.jar
+HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:8080/admin/health || exit 1
 ENTRYPOINT ["java","-jar","rclone-watchdog.jar"]

@@ -24,10 +24,17 @@ public class StartupValidator {
     @PostConstruct
     public void validateRclonePath() throws Exception {
         if (!Arrays.asList(environment.getActiveProfiles()).contains("test")) {
-            File rcloneExecutable = new File(properties.getRcloneBasePath());
-            if (!rcloneExecutable.exists()) {
-                throw new Exception("rclone executable at location " + properties.getRcloneBasePath() + " does not exist");
-            }
+            checkRcloneExecutable(properties);
+        }
+    }
+
+    public static void checkRcloneExecutable(RcwdProperties properties) throws Exception {
+        File rcloneExecutable = new File(properties.getRcloneBasePath());
+        if (!rcloneExecutable.exists()) {
+            throw new Exception("rclone executable at location " + properties.getRcloneBasePath() + " does not exist");
+        }
+        if (!rcloneExecutable.canExecute()) {
+            throw new Exception("rclone executable at location " + properties.getRcloneBasePath() + " is not executable");
         }
     }
 }
