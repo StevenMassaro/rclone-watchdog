@@ -73,11 +73,11 @@
                                     <goal>run</goal>
                                 </goals>
                                 <configuration>
-                                    <tasks>
+                                    <target>
                                         <delete failonerror="false">
                                             <fileset dir="${basedir}/src/main/resources/static" includes="**/*.*"/>
                                         </delete>
-                                    </tasks>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
