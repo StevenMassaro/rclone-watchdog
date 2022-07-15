@@ -33,6 +33,11 @@ jobs:
         id: project
       - name: Show extracted Maven project version
         run: echo ${{ steps.project.outputs.version }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: arm64,arm
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
@@ -45,6 +50,7 @@ jobs:
       - name: Build image and push to Docker Hub
         uses: docker/build-push-action@v2
         with:
+          platforms: linux/arm64,linux/amd64
           # relative path to the place where source code with Dockerfile is located
           context: .
           tags: |
