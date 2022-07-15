@@ -1,4 +1,4 @@
-FROM openjdk:17-jre
+FROM eclipse-temurin:17-jre
 EXPOSE 8080
 RUN apt-get update && apt-get install ca-certificates -y && \
     wget https://downloads.rclone.org/rclone-current-linux-amd64.zip && \
