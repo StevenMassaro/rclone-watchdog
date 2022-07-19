@@ -1,7 +1,7 @@
 FROM alpine:latest
 EXPOSE 8080
 RUN apk update && apk --no-cache add wget unzip ca-certificates openjdk17 && \
-    wget https://downloads.rclone.org/rclone-current-linux-amd64.zip && \
+    wget https://downloads.rclone.org/rclone-current-linux-amd64.zip --quiet && \
     unzip rclone-current-linux-amd64.zip && \
     cd rclone-*-linux-amd64 && \
     cp rclone /usr/bin/ && \
