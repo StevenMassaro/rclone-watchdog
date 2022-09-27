@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:19-jre
 EXPOSE 8080
 RUN apt-get update && apt-get install unzip ca-certificates -y && \
     curl https://rclone.org/install.sh | bash && \
