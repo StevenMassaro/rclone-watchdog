@@ -1,7 +1,7 @@
 package rcwd;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.springframework.stereotype.Component;
 import rcwd.helper.MessageHelper;
 import rcwd.mapper.CommandMapper;
@@ -10,7 +10,6 @@ import rcwd.model.Command;
 import rcwd.model.StatusEnum;
 import rcwd.service.TelegramService;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 /**
