@@ -5,7 +5,7 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.SocketUtils;
+import org.springframework.test.util.TestSocketUtils;
 import rcwd.helper.MessageHelper;
 import rcwd.helper.ProcessResultHandler;
 import rcwd.helper.ProcessingLogOutputStream;
@@ -107,7 +107,8 @@ public class ExecutionService {
         cmdLine.addArgument("--delete-before");
         cmdLine.addArgument("--delete-excluded");
         cmdLine.addArgument("--rc");
-        int availableTcpPort = SocketUtils.findAvailableTcpPort();
+        // todo, don't use a test class in production code to find available TCP port
+        int availableTcpPort = TestSocketUtils.findAvailableTcpPort();
         rcPorts.put(command.getId(), availableTcpPort);
         cmdLine.addArgument("--rc-addr=localhost:" + availableTcpPort);
         if (StringUtils.isNotEmpty(properties.getBandwidthSchedule()) &&
