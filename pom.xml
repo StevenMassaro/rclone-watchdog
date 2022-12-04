@@ -99,7 +99,7 @@
                                     <resources>
                                         <resource>
                                             <directory>src/frontend/build</directory>
-                                            <filtering>true</filtering>
+                                            <filtering>false</filtering>
                                         </resource>
                                     </resources>
                                 </configuration>
