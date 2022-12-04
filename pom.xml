@@ -95,6 +95,9 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
+                                    <nonFilteredFileExtensions>
+                                        <nonFilteredFileExtension>woff2</nonFilteredFileExtension>
+                                    </nonFilteredFileExtensions>
                                     <outputDirectory>${basedir}/src/main/resources/static</outputDirectory>
                                     <resources>
                                         <resource>
