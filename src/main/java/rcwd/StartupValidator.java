@@ -1,12 +1,11 @@
 package rcwd;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import rcwd.properties.RcwdProperties;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.Arrays;
 
