@@ -2,7 +2,6 @@ package rcwd.service;
 
 import lombok.extern.log4j.Log4j2;
 import okhttp3.*;
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rcwd.properties.RcwdProperties;
@@ -37,13 +36,13 @@ public class TelegramService {
                 MediaType mediaType = MediaType.parse("application/json");
                 RequestBody body = RequestBody.create(mediaType, "{\"text\":\""+text.replaceAll("\"", "'")+"\"}");
 
-                URIBuilder b = null;
-                b = new URIBuilder(telegramProperties.getTelegramApiBase() + telegramProperties.getBotToken() + TELEGRAM_SEND_MESSAGE);
-                b.addParameter("chat_id", telegramProperties.getChatId());
-//            b.addParameter("text", text);
-                b.addParameter("parse_mode", "Markdown");
+                HttpUrl httpUrl = new HttpUrl.Builder()
+                        .host(telegramProperties.getTelegramApiBase() + telegramProperties.getBotToken() + TELEGRAM_SEND_MESSAGE)
+                        .addQueryParameter("chat_id", telegramProperties.getChatId())
+                        .addQueryParameter("parse_mode", "Markdown")
+                        .build();
                 Request request = new Request.Builder()
-                        .url(b.build().toString())
+                        .url(httpUrl)
                         .post(body)
                         .addHeader("Content-Type", "application/json")
                         .build();
@@ -51,8 +50,6 @@ public class TelegramService {
                 String responseString = response.toString();
                 response.close();
                 return responseString;
-            } catch (URISyntaxException e) {
-                log.error("Failed to build Telegram URI", e);
             } catch (IOException e) {
                 log.error("Failed to call Telegram API", e);
             }
