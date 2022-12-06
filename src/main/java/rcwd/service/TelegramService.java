@@ -36,13 +36,9 @@ public class TelegramService {
                 MediaType mediaType = MediaType.parse("application/json");
                 RequestBody body = RequestBody.create(mediaType, "{\"text\":\""+text.replaceAll("\"", "'")+"\"}");
 
-                HttpUrl httpUrl = new HttpUrl.Builder()
-                        .host(telegramProperties.getTelegramApiBase() + telegramProperties.getBotToken() + TELEGRAM_SEND_MESSAGE)
-                        .addQueryParameter("chat_id", telegramProperties.getChatId())
-                        .addQueryParameter("parse_mode", "Markdown")
-                        .build();
                 Request request = new Request.Builder()
-                        .url(httpUrl)
+                        .url(telegramProperties.getTelegramApiBase() + telegramProperties.getBotToken() + TELEGRAM_SEND_MESSAGE +
+                                "?chat_id=" + telegramProperties.getChatId() + "&parse_mode=Markdown")
                         .post(body)
                         .addHeader("Content-Type", "application/json")
                         .build();
