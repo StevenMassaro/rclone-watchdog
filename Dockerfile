@@ -1,6 +1,6 @@
 FROM alpine:3.17
 EXPOSE 8080
-RUN apk add --update unzip ca-certificates && \
+RUN apk add --update unzip ca-certificates curl && \
     curl https://rclone.org/install.sh | ash && \
     apk del unzip
 ADD /target/rclone-watchdog.jar rclone-watchdog.jar
