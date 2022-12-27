@@ -1,6 +1,7 @@
 package rcwd.service;
 
 import lombok.extern.log4j.Log4j2;
+import okhttp3.*;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
@@ -129,6 +130,7 @@ public class ExecutionService {
                 telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
                 statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
                 rcPorts.remove(command.getId());
+                command.sendHealthChecksIoCall();
             }
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));

@@ -40,6 +40,7 @@ public class ProcessResultHandler extends DefaultExecuteResultHandler {
         } else {
             telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
             statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
+            command.sendHealthChecksIoCall();
         }
         ExecutionService.rcPorts.remove(command.getId());
         super.onProcessComplete(exitValue);

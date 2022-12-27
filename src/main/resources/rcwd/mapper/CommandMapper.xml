@@ -44,7 +44,8 @@
     <sql id="commandColumns">
         c.id cid,
         c.command ccommand,
-        c.name cname
+        c.name cname,
+        c.healthchecksurl chealthchecksurl
     </sql>
 
     <sql id="sourceColumns">
@@ -69,6 +70,7 @@
         <id property="id" column="cid" javaType="long"/>
         <result property="name" column="cname"/>
         <result property="command" column="ccommand"/>
+        <result property="healthchecksUrl" column="chealthchecksurl"/>
         <result property="status" column="ststatus"/>
         <result property="statusChangeDate" column="stmodifieddate"/>
         <association property="source" resultMap="sourceMap"/>

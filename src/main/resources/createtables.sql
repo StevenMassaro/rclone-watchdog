@@ -81,3 +81,5 @@ from rclonewatchdog.command c
 inner join rclonewatchdog.source s on c.source = s.id
 inner join rclonewatchdog.destination d on c.destination = d.id
 order by c.id;
+
+ALTER TABLE rclonewatchdog.command ADD healthchecksurl varchar(56) NULL;
