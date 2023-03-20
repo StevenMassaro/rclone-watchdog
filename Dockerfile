@@ -1,4 +1,4 @@
-FROM rclone/rclone:1.61
+FROM rclone/rclone:1.62.2
 EXPOSE 8080
 RUN apk add --update wget openjdk17-jre
 ADD /target/rclone-watchdog.jar rclone-watchdog.jar
