@@ -31,6 +31,7 @@ public class Command {
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss a", timezone = "America/New_York")
     private Date statusChangeDate;
     private String healthchecksUrl;
+    private String schedule;
 
     @JsonIgnore
     public boolean hasFilters(){

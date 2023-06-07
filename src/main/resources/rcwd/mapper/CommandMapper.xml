@@ -45,7 +45,8 @@
         c.id cid,
         c.command ccommand,
         c.name cname,
-        c.healthchecksurl chealthchecksurl
+        c.healthchecksurl chealthchecksurl,
+        c.schedule cschedule
     </sql>
 
     <sql id="sourceColumns">
@@ -73,6 +74,7 @@
         <result property="healthchecksUrl" column="chealthchecksurl"/>
         <result property="status" column="ststatus"/>
         <result property="statusChangeDate" column="stmodifieddate"/>
+        <result property="schedule" column="cschedule"/>
         <association property="source" resultMap="sourceMap"/>
         <association property="destination" resultMap="destinationMap"/>
         <association property="filters" resultMap="filterMap"/>

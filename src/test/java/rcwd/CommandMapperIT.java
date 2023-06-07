@@ -39,7 +39,7 @@ public class CommandMapperIT {
         dataSource.getConnection().prepareCall("INSERT INTO rclonewatchdog.\"source\" (id, \"name\", directory) VALUES(1, 'unRAID Backups', '/data/disks/Temporary/Backups');").execute();
         dataSource.getConnection().prepareCall("INSERT INTO rclonewatchdog.destination (id, \"name\", remote, directory) VALUES(1, 'Google Drive 2TB Encrypted: AutomatedUnRaid', 'GoogleDrive-Limited-Crypt', 'AutomatedUnRaid');").execute();
         dataSource.getConnection().prepareCall("INSERT INTO rclonewatchdog.\"filter\" (id, \"filter\") VALUES(1, '--exclude=Windows Images/**');").execute();
-        dataSource.getConnection().prepareCall("INSERT INTO rclonewatchdog.command (name, command, \"source\", destination, \"filter\", hidden) VALUES('test', 'sync', 1, 1, 1, false);").execute();
+        dataSource.getConnection().prepareCall("INSERT INTO rclonewatchdog.command (name, command, \"source\", destination, \"filter\", hidden, schedule) VALUES('test', 'sync', 1, 1, 1, false, 'sch');").execute();
 
         statusMapper.insert(1, StatusEnum.DRY_RUN_EXECUTION_START, null);
 
@@ -47,6 +47,7 @@ public class CommandMapperIT {
         assertEquals(1, list.size());
         assertEquals(StatusEnum.DRY_RUN_EXECUTION_START, list.get(0).getStatus());
         assertNotNull(list.get(0).getStatusChangeDate());
+        assertEquals("sch", list.get(0).getSchedule());
     }
 
 }

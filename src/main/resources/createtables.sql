@@ -42,6 +42,7 @@ create table rclonewatchdog.command(
   destination int not null references rclonewatchdog.destination(id),
   filter int null references rclonewatchdog.filter(id),
   hidden boolean default false,
+  schedule varchar(200),
   primary key(name, command, source, destination, filter)
 );
 
