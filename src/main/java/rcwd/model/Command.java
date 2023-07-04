@@ -47,7 +47,11 @@ public class Command {
     private void addArgs(CommandLine cmdLine){
         cmdLine.addArgument(command);
         cmdLine.addArgument(source.getDirectory().trim());
-        cmdLine.addArgument(destination.getRemote() + ":" + destination.getDirectory());
+        String destinationArgument = destination.getRemote();
+        if (StringUtils.isNotEmpty(destination.getDirectory())) {
+            destinationArgument += ":" + destination.getDirectory();
+        }
+        cmdLine.addArgument(destinationArgument);
         if (hasFilters()) {
             for(Filter filter : filters){
                 cmdLine.addArgument(filter.getFilter(), false);
