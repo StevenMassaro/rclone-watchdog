@@ -48,7 +48,7 @@ public class Command {
         cmdLine.addArgument(command);
         cmdLine.addArgument(source.getDirectory().trim());
         String destinationArgument = destination.getRemote();
-        if (StringUtils.isNotEmpty(destination.getDirectory())) {
+        if (StringUtils.isNotBlank(destination.getDirectory())) {
             destinationArgument += ":" + destination.getDirectory();
         }
         cmdLine.addArgument(destinationArgument);
