@@ -29,23 +29,25 @@ public class ProcessingLogOutputStream extends LogOutputStream {
      * Maximum number of errors that are allowed to occur in a single timespan.
      */
     private final long maxErrorsInTime = 3;
+    private final boolean ignoreDiscardedClosedSshConnection;
 
-    public ProcessingLogOutputStream(ExecutionService executionService, Command task, CircularFifoQueue<String> logQueue, Boolean printRcloneToConsole) {
-        this(executionService, null, task, logQueue, 0, printRcloneToConsole);
+    public ProcessingLogOutputStream(ExecutionService executionService, Command task, CircularFifoQueue<String> logQueue, Boolean printRcloneToConsole, boolean ignoreDiscardedClosedSshConnection) {
+        this(executionService, null, task, logQueue, 0, printRcloneToConsole, ignoreDiscardedClosedSshConnection);
     }
 
-    public ProcessingLogOutputStream(ExecutionService executionService, TelegramService telegramHelper, Command task, CircularFifoQueue<String> logQueue, int logLinesToReport, Boolean printRcloneToConsole) {
+    public ProcessingLogOutputStream(ExecutionService executionService, TelegramService telegramHelper, Command task, CircularFifoQueue<String> logQueue, int logLinesToReport, Boolean printRcloneToConsole, boolean ignoreDiscardedClosedSshConnection) {
         this.executionService = executionService;
         this.telegramHelper = telegramHelper;
         this.task = task;
         this.logQueue = logQueue;
         this.printRcloneToConsole = printRcloneToConsole;
+        this.ignoreDiscardedClosedSshConnection = ignoreDiscardedClosedSshConnection;
         messageHelper = new MessageHelper(logLinesToReport);
     }
 
     @Override
     protected void processLine(String line, int level) {
-        if (line.contains("ERROR")) {
+        if (isError(line)) {
             if(telegramHelper!=null){
                 telegramHelper.sendTelegramMessage(messageHelper.buildErrorText(task.getName(), line));
             }
@@ -63,6 +65,16 @@ public class ProcessingLogOutputStream extends LogOutputStream {
 
         if (printRcloneToConsole) {
             log.debug(line);
+        }
+    }
+
+    private boolean isError(String line) {
+        boolean lineContainsError = line.contains("ERROR");
+
+        if (lineContainsError && ignoreDiscardedClosedSshConnection && line.contains("Discarding closed SSH connection")) {
+            return false;
+        } else {
+            return lineContainsError;
         }
     }
 }

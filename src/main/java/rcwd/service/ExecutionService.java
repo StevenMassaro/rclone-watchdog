@@ -5,6 +5,7 @@ import okhttp3.*;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.test.util.TestSocketUtils;
 import rcwd.helper.MessageHelper;
@@ -42,11 +43,16 @@ public class ExecutionService {
     private final MessageHelper messageHelper;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledBandwidthResetJob = null;
+    private final boolean ignoreDiscardedClosedSshConnection;
 
-    public ExecutionService(RcwdProperties properties, TelegramService telegramService, StatusMapper statusMapper) {
+    public ExecutionService(RcwdProperties properties,
+                            TelegramService telegramService,
+                            StatusMapper statusMapper,
+                            @Value("${ignoreDiscardedClosedSshConnection:true}") boolean ignoreDiscardedClosedSshConnection) {
         this.properties = properties;
         this.telegramService = telegramService;
         this.statusMapper = statusMapper;
+        this.ignoreDiscardedClosedSshConnection = ignoreDiscardedClosedSshConnection;
         messageHelper = new MessageHelper(properties.getMaxTelegramLogLines());
     }
 
@@ -70,7 +76,7 @@ public class ExecutionService {
         }
 
         CircularFifoQueue<String> logQueue = getLogQueueForCommand(command.getId(), 100_000, true);
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(this, command, logQueue, properties.getPrintRcloneToConsole());
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(this, command, logQueue, properties.getPrintRcloneToConsole(), ignoreDiscardedClosedSshConnection);
         DefaultExecutor executor = new DefaultExecutor();
         executor.setProcessDestroyer(new ShutdownHookProcessDestroyer());
         PumpStreamHandler streamHandler = new PumpStreamHandler(logOutputStream);
@@ -118,7 +124,7 @@ public class ExecutionService {
             cmdLine.addArgument("--bwlimit=" + properties.getBandwidthSchedule(), false);
         }
         DefaultExecutor executor = getExecutorForCommand(command.getId(), true);
-        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(this, telegramService, command, logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole());
+        ProcessingLogOutputStream logOutputStream = new ProcessingLogOutputStream(this, telegramService, command, logQueue, properties.getMaxTelegramLogLines(), properties.getPrintRcloneToConsole(), ignoreDiscardedClosedSshConnection);
         PumpStreamHandler pumpStreamHandler = new PumpStreamHandler(logOutputStream);
         executor.setStreamHandler(pumpStreamHandler);
         try {
