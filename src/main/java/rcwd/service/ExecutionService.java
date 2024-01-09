@@ -1,7 +1,6 @@
 package rcwd.service;
 
 import lombok.extern.log4j.Log4j2;
-import okhttp3.*;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.*;
 import org.apache.commons.lang.StringUtils;
