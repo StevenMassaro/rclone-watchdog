@@ -5,3 +5,11 @@ export function handleRestResponse(res) {
         throw res;
     }
 }
+
+export function handleRawResponse(res) {
+    if (res.ok) {
+        return res.text();
+    } else {
+        throw res;
+    }
+}

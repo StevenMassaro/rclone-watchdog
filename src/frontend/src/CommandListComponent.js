@@ -7,7 +7,7 @@ import {Button} from 'semantic-ui-react';
 import {toast, ToastContainer} from "react-toastify";
 import 'react-toastify/dist/ReactToastify.min.css';
 import LogViewerComponent from "./LogViewerComponent";
-import {handleRestResponse} from "./Utils";
+import {handleRestResponse, handleRawResponse} from "./Utils";
 
 class CommandListComponent extends Component {
 
@@ -45,6 +45,28 @@ class CommandListComponent extends Component {
                         error:<br/>{errorMessage}</div>));
                 });
     };
+
+    print = (id) => {
+        if (id) {
+            fetch("./command/" + id + "/print")
+                .then(handleRawResponse)
+                .then(
+                    (print) => {
+                        this.setState({
+                            printResult: print
+                        });
+                    },
+                    (error) => {
+                        error.text().then(errorMessage => toast.error(<div>Failed to print command with
+                            error:<br/>{errorMessage}</div>));
+                    });
+        } else {
+            this.setState({
+                printResult: undefined
+            })
+        }
+
+    }
 
     execute = (id, force = false) => {
         fetch("./command/" + id + "/execute?force=" + force)
@@ -109,6 +131,19 @@ class CommandListComponent extends Component {
                         showLog={this.showLog}
                         commandId={this.state.logId}
                     />
+                </ReactModal>
+
+                <ReactModal
+                    isOpen={this.state.printResult !== undefined}
+                    contentLabel={"Print"}
+                    ariaHideApp={false}
+                >
+                    <div>
+                        {this.state.printResult && this.state.printResult}
+                    </div>
+                    <Button onClick={() => this.print(null)} variant="control">
+                        Close
+                    </Button>
                 </ReactModal>
 
                 <form onSubmit={this.handleSubmit}>
@@ -180,6 +215,9 @@ class CommandListComponent extends Component {
                                         <Button
                                             onClick={() => this.dryRun(row.original.id)}
                                         >Dry run</Button>
+                                        <Button
+                                            onClick={() => this.print(row.original.id)}
+                                        >Print</Button>
                                         <Button
                                             onClick={() => this.kill(row.original.id)}
                                         >Kill</Button>
