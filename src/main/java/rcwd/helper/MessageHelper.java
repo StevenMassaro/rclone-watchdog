@@ -90,7 +90,7 @@ public class MessageHelper {
         return "*Finished dry run " + task + "*";
     }
 
-    private String createStringFromCircularFifoQueue(CircularFifoQueue<String> queue) {
+    public String createStringFromCircularFifoQueue(CircularFifoQueue<String> queue) {
         StringBuilder logLineText = new StringBuilder();
         if (queue != null) {
             if (queue.size() > logLinesToReport) {

@@ -7,10 +7,13 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.lang.StringUtils;
+import rcwd.helper.MessageHelper;
 
 import java.io.IOException;
 import java.util.Date;
@@ -59,12 +62,13 @@ public class Command {
         }
     }
 
-    public void sendHealthChecksIoCall() {
+    public void sendHealthChecksIoCall(MessageHelper messageHelper, CircularFifoQueue<String> logQueue) {
         if (StringUtils.isNotEmpty(getHealthchecksUrl())) {
             OkHttpClient client = new OkHttpClient();
 
             Request request = new Request.Builder()
                     .url(getHealthchecksUrl())
+                    .method("POST", RequestBody.create(messageHelper.createStringFromCircularFifoQueue(logQueue).getBytes()))
                     .build();
 
             try (Response ignored = client.newCall(request).execute()) {

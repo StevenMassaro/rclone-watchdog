@@ -135,7 +135,7 @@ public class ExecutionService {
                 telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
                 statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
                 rcPorts.remove(command.getId());
-                command.sendHealthChecksIoCall();
+                command.sendHealthChecksIoCall(messageHelper, logQueue);
             }
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
