@@ -62,12 +62,16 @@ public class Command {
         }
     }
 
-    public void sendHealthChecksIoCall(MessageHelper messageHelper, CircularFifoQueue<String> logQueue) {
+    public void sendHealthChecksIoCall(MessageHelper messageHelper, CircularFifoQueue<String> logQueue, boolean isFailure) {
         if (StringUtils.isNotEmpty(getHealthchecksUrl())) {
             OkHttpClient client = new OkHttpClient();
 
+            String healthchecksUrl = getHealthchecksUrl();
+            if (isFailure) {
+                healthchecksUrl += "/fail";
+            }
             Request request = new Request.Builder()
-                    .url(getHealthchecksUrl())
+                    .url(healthchecksUrl)
                     .method("POST", RequestBody.create(messageHelper.createStringFromCircularFifoQueue(logQueue).getBytes()))
                     .build();
 

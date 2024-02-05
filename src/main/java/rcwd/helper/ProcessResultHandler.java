@@ -40,7 +40,7 @@ public class ProcessResultHandler extends DefaultExecuteResultHandler {
         } else {
             telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
             statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
-            command.sendHealthChecksIoCall(messageHelper, logQueue);
+            command.sendHealthChecksIoCall(messageHelper, logQueue, false);
         }
         ExecutionService.rcPorts.remove(command.getId());
         super.onProcessComplete(exitValue);
@@ -55,6 +55,7 @@ public class ProcessResultHandler extends DefaultExecuteResultHandler {
         } else {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
+            command.sendHealthChecksIoCall(messageHelper, logQueue, true);
         }
         ExecutionService.rcPorts.remove(command.getId());
         super.onProcessFailed(e);

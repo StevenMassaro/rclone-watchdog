@@ -135,12 +135,13 @@ public class ExecutionService {
                 telegramService.sendTelegramMessage(messageHelper.buildTelegramExecutionEndText(command.getName(), startTime, System.nanoTime(), logQueue));
                 statusMapper.insert(command.getId(), StatusEnum.EXECUTION_SUCCESS, null);
                 rcPorts.remove(command.getId());
-                command.sendHealthChecksIoCall(messageHelper, logQueue);
+                command.sendHealthChecksIoCall(messageHelper, logQueue, false);
             }
         } catch (IOException e) {
             telegramService.sendTelegramMessage(messageHelper.buildFailureText(command.getName(), e.toString(), logQueue));
             log.error("Failed to run rclone job", e);
             statusMapper.insert(command.getId(), StatusEnum.EXECUTION_FAIL, null);
+            command.sendHealthChecksIoCall(messageHelper, logQueue, true);
         }
 
         log.debug("Finish executing " + command.getId());
