@@ -1,4 +1,10 @@
+# Update
+
+I suggest using [backrest](https://github.com/garethgeorge/backrest) instead of this project. Backrest is more fully featured, and operates as a true backup service. This project will receive limited updates as I've almost fully transitioned to using backrest.
+
 # rclone-watchdog
+
+Run your rclone commands on a schedule.
 
 ## Environment variables
 
