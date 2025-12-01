@@ -13,6 +13,7 @@ import rcwd.model.Command;
 import rcwd.service.ExecutionService;
 
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * This class runs at startup to schedule commands which specify a schedule in their command definition.
@@ -46,7 +47,7 @@ public class Scheduler {
                         } catch (Exception e) {
                             log.error("Failed to execute scheduled job for command ID {}", command.getId(), e);
                         }
-                    }, new CronTrigger(schedule));
+                    }, new CronTrigger(schedule, TimeZone.getDefault()));
                     log.info("Configured command ID {} to execute following schedule {}", command.getId(), schedule);
                 } catch (Exception e) {
                     log.error("Failed to configure schedule for command ID {} with schedule {}", command.getId(), schedule, e);
